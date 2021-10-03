@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_centerInParent="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:src="@drawable/logo"
+            android:layout_width="200dp"
+            android:layout_height="200dp"/>
+
+        <TextView
+            android:gravity="center"
+            android:id="@+id/txtSlogan"
+            android:text="@string/slogan"
+            android:fontFamily="@font/averta_black"
+            android:textColor="@color/black"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:weightSum="2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp">
+
+        <Button
+            android:id="@+id/btnSignUp"
+            android:text="Create A New Account"
+            android:textColor="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/primary_button"
+            android:shadowColor="@color/black"/>
+
+        <Button
+            android:id="@+id/btnSignIn"
+            android:text="Sign In"
+            android:textColor="@color/colorPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/primary_button2"
+            android:shadowColor="@color/black"/>
+
+        <Button
+            android:id="@+id/btnGoogle"
+            android:text="Sign In with Google"
+            android:textColor="@color/neutralsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/primary_button3"
+            android:shadowColor="@color/black"
+            android:drawableLeft="@drawable/ic_google"
+            android:paddingLeft="80dip"
+            android:paddingRight="55dip"
+            android:drawablePadding="-50dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show more"
+            android:gravity="center"
+            android:textColor="@color/black"/>
+
+
+    </LinearLayout>
+
+</RelativeLayout>

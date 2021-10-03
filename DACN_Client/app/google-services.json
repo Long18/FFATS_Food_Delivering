@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "984167624545",
+    "firebase_url": "https://ffats-3ac02-default-rtdb.firebaseio.com",
+    "project_id": "ffats-3ac02",
+    "storage_bucket": "ffats-3ac02.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:984167624545:android:46f4009942264cacde9f20",
+        "android_client_info": {
+          "package_name": "client.william.ffats"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "984167624545-ov0d6ofbkfecbc4jlt9errfbtgbghkgq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "client.william.ffats",
+            "certificate_hash": "753aabee489dd1e63b2d7f77fe2749bfd39dad4e"
+          }
+        },
+        {
+          "client_id": "984167624545-0rbbe2599rckv0f4g9413rgrbjr6t40f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHCPsUG2_2XlU3kuVqmYCDGNYY7wN06Ow"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "984167624545-0rbbe2599rckv0f4g9413rgrbjr6t40f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
