@@ -24,6 +24,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import client.william.ffats.Common.Common;
 import client.william.ffats.Model.User;
 
 public class activity_sign_in extends AppCompatActivity {
@@ -67,10 +68,10 @@ public class activity_sign_in extends AppCompatActivity {
                             if(user.getPassword().equals(edtPassword.getText().toString()))
                             {
                                 {
-//                                    Intent homeInten = new Intent(activity_sign_in.this,Home.class);
-//                                    Common.currentuser = user;
-//                                    startActivity(homeInten);
-//                                    finish();
+                                    Intent homeInten = new Intent(activity_sign_in.this,Home.class);
+                                    Common.currentUser = user;
+                                    startActivity(homeInten);
+                                    finish();
                                     Toast.makeText(activity_sign_in.this,"OK",Toast.LENGTH_SHORT).show();
                                 }
                             }

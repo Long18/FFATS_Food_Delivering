@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_favorites"
+            android:icon="@drawable/heart"
+            android:title="Your Favorites" />
+        <item
+            android:id="@+id/nav_address"
+            android:icon="@drawable/map"
+            android:title="Address management" />
+        <item
+            android:id="@+id/nav_payment"
+            android:icon="@drawable/credit_card"
+            android:title="Payment management" />
+        <item
+            android:id="@+id/nav_promotion"
+            android:icon="@drawable/coupon"
+            android:title="Your Promotion" />
+        <item
+            android:id="@+id/nav_history_order"
+            android:icon="@drawable/ic_package"
+            android:title="Order history" />
+        <item
+            android:id="@+id/nav_support"
+            android:icon="@drawable/info_circle"
+            android:title="Support center" />
+    </group>
+</menu>
