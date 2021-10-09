@@ -64,7 +64,7 @@ public class activity_sign_in extends AppCompatActivity {
 
                             mDialog.dismiss();
                             User user = dataSnapshot.child(editPhone.getText().toString()).getValue(User.class);
-                            //user.setPhone(editPhone.getText().toString());
+                            user.setPhone(editPhone.getText().toString());
                             if(user.getPassword().equals(edtPassword.getText().toString()))
                             {
                                 {
@@ -82,7 +82,7 @@ public class activity_sign_in extends AppCompatActivity {
                         }
                         else
                         {
-                            //mDialog.dismiss();
+                            mDialog.dismiss();
                             Toast.makeText(activity_sign_in.this,"Not Found",Toast.LENGTH_SHORT).show();
                         }
                     }

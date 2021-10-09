@@ -3,15 +3,13 @@ package client.william.ffats.Model;
 public class Category {
     private String Name;
     private String Image;
-    private String Address;
 
     public Category() {
     }
 
-    public Category(String name, String image, String address) {
+    public Category(String name, String image){
         Name = name;
         Image = image;
-        Address = address;
     }
 
     public String getName() {
@@ -30,11 +28,4 @@ public class Category {
         Image = image;
     }
 
-    public String getAddress() {
-        return Address;
-    }
-
-    public void setAddress(String address) {
-        Address = address;
-    }
 }
