@@ -26,14 +26,14 @@ public class MainActivity extends AppCompatActivity {
         btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //startActivity(new Intent(MainActivity.this, activity_sign_in.class));
+                startActivity(new Intent(MainActivity.this, SignIn.class));
             }
         });
 
         btnSignUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //startActivity(new Intent(MainActivity.this, activity_sign_up.class));
+                startActivity(new Intent(MainActivity.this, SignUp.class));
             }
         });
     }

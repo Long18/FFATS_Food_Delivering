@@ -1,4 +1,4 @@
-package client.william.ffats.Model;
+package server.william.ffats.Model;
 
 public class User {
     private String Name;
@@ -16,13 +16,13 @@ public class User {
     public User(String name, String password) {
         Name = name;
         Password = password;
-        IsStaff = "false";
     }
 
-    public User(String name, String password, String phone) {
+    public User(String name, String password, String phone, String isStaff) {
         Name = name;
         Password = password;
         Phone = phone;
+        IsStaff = isStaff;
     }
 
     public String getIsStaff() {
