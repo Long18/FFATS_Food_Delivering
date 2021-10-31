@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "984167624545",
-    "firebase_url": "https://ffats-3ac02-default-rtdb.firebaseio.com",
-    "project_id": "ffats-3ac02",
-    "storage_bucket": "ffats-3ac02.appspot.com"
+    "project_number": "498546850757",
+    "firebase_url": "https://dacn-b7a72-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "dacn-b7a72",
+    "storage_bucket": "dacn-b7a72.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:984167624545:android:46f4009942264cacde9f20",
+        "mobilesdk_app_id": "1:498546850757:android:4aa0d72d883073ea0a29ac",
         "android_client_info": {
           "package_name": "client.william.ffats"
         }
       },
       "oauth_client": [
         {
-          "client_id": "984167624545-ov0d6ofbkfecbc4jlt9errfbtgbghkgq.apps.googleusercontent.com",
+          "client_id": "498546850757-6p4mghb9cnhr5l3j8tpsgu456h4v107g.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "client.william.ffats",
@@ -23,20 +23,20 @@
           }
         },
         {
-          "client_id": "984167624545-0rbbe2599rckv0f4g9413rgrbjr6t40f.apps.googleusercontent.com",
+          "client_id": "498546850757-bfbqjb2vsud8gs8bcj8ntml4am2m22q5.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCHCPsUG2_2XlU3kuVqmYCDGNYY7wN06Ow"
+          "current_key": "AIzaSyBolQk7SJNQ9IUz1_Qsd6d9UYvXtorOmD4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "984167624545-0rbbe2599rckv0f4g9413rgrbjr6t40f.apps.googleusercontent.com",
+              "client_id": "498546850757-bfbqjb2vsud8gs8bcj8ntml4am2m22q5.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
@@ -45,14 +45,14 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:984167624545:android:30f84eb15a0bc823de9f20",
+        "mobilesdk_app_id": "1:498546850757:android:17d9725371d772300a29ac",
         "android_client_info": {
           "package_name": "server.william.ffats"
         }
       },
       "oauth_client": [
         {
-          "client_id": "984167624545-o95usjb5e742c2ptj1dbhi7f0r5i3kij.apps.googleusercontent.com",
+          "client_id": "498546850757-24mfuq1jvoqum24cup4552jaoi7tu2u8.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "server.william.ffats",
@@ -60,20 +60,20 @@
           }
         },
         {
-          "client_id": "984167624545-0rbbe2599rckv0f4g9413rgrbjr6t40f.apps.googleusercontent.com",
+          "client_id": "498546850757-bfbqjb2vsud8gs8bcj8ntml4am2m22q5.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCHCPsUG2_2XlU3kuVqmYCDGNYY7wN06Ow"
+          "current_key": "AIzaSyBolQk7SJNQ9IUz1_Qsd6d9UYvXtorOmD4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "984167624545-0rbbe2599rckv0f4g9413rgrbjr6t40f.apps.googleusercontent.com",
+              "client_id": "498546850757-bfbqjb2vsud8gs8bcj8ntml4am2m22q5.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
