@@ -48,18 +48,21 @@ public class OrderStatus extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-        if(itent.getStringExtra("brojStola") != null) {
-            loadOrders(getIntent().getStringExtra("brojStola"));
+
+        //Click to notification
+        if(getIntent() != null) {
+            loadOrders(Common.currentUser.getPhone());
         }
         else {
-            loadOrders(phone);
+            loadOrders(getIntent().getStringExtra("userPhone"));
         }
     }
 
     private void loadOrders(String phone) {
 
         FirebaseRecyclerOptions<Request> options = new FirebaseRecyclerOptions
-                .Builder<Request>().setQuery(requests.orderByChild("phone").equalTo(phone), Request.class).build();
+                .Builder<Request>()
+                .setQuery(requests.orderByChild("phone").equalTo(phone), Request.class).build();
 
 
         adapter = new FirebaseRecyclerAdapter<Request, OrderViewHolder>(options) {
@@ -72,7 +75,7 @@ public class OrderStatus extends AppCompatActivity {
                 orderViewHolder.setItemClickListener(new ItemClickListener() {
                     @Override
                     public void onClick(View view, int position, boolean isLongClik) {
-
+                        //Empty func to fix crash when user onClick
                     }
                 });
 

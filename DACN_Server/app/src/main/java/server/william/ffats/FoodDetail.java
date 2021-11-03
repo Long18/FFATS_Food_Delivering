@@ -59,7 +59,7 @@ public class FoodDetail extends AppCompatActivity {
                         currentFood.getDiscount()
                 ));
 
-                Toast.makeText(FoodDetail.this, "Added to Cart", Toast.LENGTH_SHORT).show();
+                Toast.makeText(FoodDetail.this, "Added to OrderStatus", Toast.LENGTH_SHORT).show();
             }
         });
 
