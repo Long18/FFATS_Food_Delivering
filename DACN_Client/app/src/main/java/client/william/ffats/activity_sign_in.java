@@ -48,51 +48,52 @@ public class activity_sign_in extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                final ProgressDialog mDialog = new ProgressDialog(activity_sign_in.this);
-                mDialog.setMessage("Please wait...");
-                Drawable drawable = new ProgressBar(activity_sign_in.this).getIndeterminateDrawable().mutate();
-                drawable.setColorFilter(ContextCompat.getColor(activity_sign_in.this, R.color.colorPrimary),
-                        PorterDuff.Mode.SRC_IN);
-                mDialog.setIndeterminateDrawable(drawable);
-                mDialog.show();
+                if(Common.isConnectedToInternet(getBaseContext())) {
 
-                table_user.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    final ProgressDialog mDialog = new ProgressDialog(activity_sign_in.this);
+                    mDialog.setMessage("Please wait...");
+                    Drawable drawable = new ProgressBar(activity_sign_in.this).getIndeterminateDrawable().mutate();
+                    drawable.setColorFilter(ContextCompat.getColor(activity_sign_in.this, R.color.colorPrimary),
+                            PorterDuff.Mode.SRC_IN);
+                    mDialog.setIndeterminateDrawable(drawable);
+                    mDialog.show();
 
-                        if(dataSnapshot.child(editPhone.getText().toString()).exists()){
+                    table_user.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                            mDialog.dismiss();
-                            User user = dataSnapshot.child(editPhone.getText().toString()).getValue(User.class);
-                            user.setPhone(editPhone.getText().toString());
-                            if(user.getPassword().equals(edtPassword.getText().toString()))
-                            {
-                                {
-                                    Intent homeInten = new Intent(activity_sign_in.this,Home.class);
-                                    Common.currentUser = user;
-                                    startActivity(homeInten);
-                                    finish();
-                                    Toast.makeText(activity_sign_in.this,"OK",Toast.LENGTH_SHORT).show();
+                            if (dataSnapshot.child(editPhone.getText().toString()).exists()) {
+
+                                mDialog.dismiss();
+                                User user = dataSnapshot.child(editPhone.getText().toString()).getValue(User.class);
+                                user.setPhone(editPhone.getText().toString());
+                                if (user.getPassword().equals(edtPassword.getText().toString())) {
+                                    {
+                                        Intent homeInten = new Intent(activity_sign_in.this, Home.class);
+                                        Common.currentUser = user;
+                                        startActivity(homeInten);
+                                        finish();
+                                        Toast.makeText(activity_sign_in.this, "OK", Toast.LENGTH_SHORT).show();
+                                    }
+                                } else {
+                                    Toast.makeText(activity_sign_in.this, "Wrong password", Toast.LENGTH_SHORT).show();
                                 }
-                            }
-                            else
-                            {
-                                Toast.makeText(activity_sign_in.this,"Wrong password",Toast.LENGTH_SHORT).show();
+                            } else {
+                                mDialog.dismiss();
+                                Toast.makeText(activity_sign_in.this, "Not Found", Toast.LENGTH_SHORT).show();
                             }
                         }
-                        else
-                        {
-                            mDialog.dismiss();
-                            Toast.makeText(activity_sign_in.this,"Not Found",Toast.LENGTH_SHORT).show();
+
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
                         }
-                    }
-
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
+                    });
+                }else{
+                    Toast.makeText(activity_sign_in.this, "Please check internet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
         });
 

@@ -2,18 +2,12 @@ package server.william.ffats;
 
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -27,19 +21,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 import server.william.ffats.Common.Common;
-import server.william.ffats.Database.Database;
 import server.william.ffats.Interface.ItemClickListener;
-import server.william.ffats.Model.Category;
-import server.william.ffats.Model.Order;
 import server.william.ffats.Model.Request;
-import server.william.ffats.ViewHolder.CartAdapter;
-import server.william.ffats.ViewHolder.MenuViewHolder;
 import server.william.ffats.ViewHolder.OrderViewHolder;
 
 public class OrderStatus extends AppCompatActivity {
@@ -89,7 +73,10 @@ public class OrderStatus extends AppCompatActivity {
                 holder.setItemClickListener(new ItemClickListener() {
                     @Override
                     public void onClick(View view, int position, boolean isLongClick) {
-                        //Empty func to fix crash when user onClick
+
+                        Intent trackingOrder = new Intent(OrderStatus.this, TrackingOrder.class);
+                        Common.currentRequest = model;
+                        startActivity(trackingOrder);
                     }
                 });
             }

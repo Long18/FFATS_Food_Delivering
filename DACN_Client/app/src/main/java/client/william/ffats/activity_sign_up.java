@@ -20,6 +20,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import client.william.ffats.Common.Common;
 import client.william.ffats.Model.User;
 
 public class activity_sign_up extends AppCompatActivity {
@@ -42,40 +43,44 @@ public class activity_sign_up extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                final ProgressDialog mDialog = new ProgressDialog(activity_sign_up.this);
+                if (Common.isConnectedToInternet(getBaseContext())) {
 
-                mDialog.setMessage("Please wait...");
-                Drawable drawable = new ProgressBar(activity_sign_up.this).getIndeterminateDrawable().mutate();
-                drawable.setColorFilter(ContextCompat.getColor(activity_sign_up.this, R.color.colorPrimary),
-                        PorterDuff.Mode.SRC_IN);
-                mDialog.setIndeterminateDrawable(drawable);
-                mDialog.show();
+                    final ProgressDialog mDialog = new ProgressDialog(activity_sign_up.this);
 
-                table_user.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    mDialog.setMessage("Please wait...");
+                    Drawable drawable = new ProgressBar(activity_sign_up.this).getIndeterminateDrawable().mutate();
+                    drawable.setColorFilter(ContextCompat.getColor(activity_sign_up.this, R.color.colorPrimary),
+                            PorterDuff.Mode.SRC_IN);
+                    mDialog.setIndeterminateDrawable(drawable);
+                    mDialog.show();
 
-                        if(dataSnapshot.child(editPhone.getText().toString()).exists())
-                        {
-                            mDialog.dismiss();
-                            Toast.makeText(activity_sign_up.this,"Phone Number Already Register",Toast.LENGTH_SHORT).show();
+                    table_user.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                            if (dataSnapshot.child(editPhone.getText().toString()).exists()) {
+                                mDialog.dismiss();
+                                Toast.makeText(activity_sign_up.this, "Phone Number Already Register", Toast.LENGTH_SHORT).show();
+
+                            } else {
+                                mDialog.dismiss();
+                                User user = new User(editPhone.getText().toString());
+                                table_user.child(editPhone.getText().toString()).setValue(user);
+                                Toast.makeText(activity_sign_up.this, "Register Success", Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
                         }
-                        else
-                        {
-                            mDialog.dismiss();
-                            User user = new User(editPhone.getText().toString());
-                            table_user.child(editPhone.getText().toString()).setValue(user);
-                            Toast.makeText(activity_sign_up.this,"Register Success",Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-                });
+                    });
+                }
+                else {
+                    Toast.makeText(activity_sign_up.this, "Please check internet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
             }
         });
     }
