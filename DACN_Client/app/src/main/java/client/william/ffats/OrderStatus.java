@@ -37,7 +37,6 @@ public class OrderStatus extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_status);
-        Intent itent = getIntent();
 
         database = FirebaseDatabase.getInstance();
         requests = database.getReference("Requests");

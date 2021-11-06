@@ -104,6 +104,16 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
+        <com.rey.material.widget.CheckBox
+            android:id="@+id/ckbRemember"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Material.Drawable.CheckBox"
+            android:text="Remember me"
+            android:gravity="center"
+            app:cbd_strokeColor="@color/colorPrimary"
+            app:cbd_tickColor="@color/colorAccent"/>
+
         <Button
             android:id="@+id/btnContinue"
             android:text="Continue"

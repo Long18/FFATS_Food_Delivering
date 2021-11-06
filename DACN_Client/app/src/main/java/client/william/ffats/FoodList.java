@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import client.william.ffats.Common.Common;
 import client.william.ffats.Interface.ItemClickListener;
 import client.william.ffats.Model.Category;
 import client.william.ffats.Model.Food;
@@ -71,7 +72,12 @@ public class FoodList extends AppCompatActivity {
         if (getIntent() != null)
             categoryId = getIntent().getStringExtra("CategoryId");
         if (!categoryId.isEmpty() && categoryId != null){
-            loadListFood(categoryId);
+            if (Common.isConnectedToInternet(getBaseContext())){
+                loadListFood(categoryId);
+            }else{
+                Toast.makeText(FoodList.this, "Please check your connection", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
         //Search

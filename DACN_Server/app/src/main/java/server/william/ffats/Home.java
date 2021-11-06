@@ -23,8 +23,12 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -52,6 +56,7 @@ import java.util.UUID;
 import server.william.ffats.Common.Common;
 import server.william.ffats.Interface.ItemClickListener;
 import server.william.ffats.Model.Category;
+import server.william.ffats.Service.ListenOrder;
 import server.william.ffats.ViewHolder.MenuViewHolder;
 import server.william.ffats.databinding.ActivityHomeBinding;
 
@@ -133,8 +138,8 @@ public class Home extends AppCompatActivity
             return;
         }
         // register the service
-//        Intent service = new Intent(Home.this, ListenOrder.class);
-//        startService(service);
+        Intent service = new Intent(Home.this, ListenOrder.class);
+        startService(service);
     }
 
     private void showDialog() {
@@ -366,8 +371,8 @@ public class Home extends AppCompatActivity
             Toast.makeText(Home.this, "okok", Toast.LENGTH_SHORT).show();
 
         }else if (id == R.id.nav_payment) {
-//            Intent cartIntent = new Intent(Home.this, OrderStatus.class);
-//            startActivity(cartIntent);
+            Intent cartIntent = new Intent(Home.this, OrderStatus.class);
+            startActivity(cartIntent);
 
         } else if (id == R.id.nav_history_order) {
             Intent orderIntent = new Intent(Home.this, OrderStatus.class);
@@ -404,6 +409,20 @@ public class Home extends AppCompatActivity
     }
 
     private void deleteCategory(String key) {
+        DatabaseReference foods = database.getReference("Foods");
+        Query foodInCategory = foods.orderByChild("menuId").equalTo(key);
+        foodInCategory.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                snapshot.getRef().removeValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
         category.child(key).removeValue();
         Toast.makeText(Home.this, "Delete Success", Toast.LENGTH_SHORT).show();
     }

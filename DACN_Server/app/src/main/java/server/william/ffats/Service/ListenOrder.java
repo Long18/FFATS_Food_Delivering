@@ -1,4 +1,4 @@
-package client.william.ffats.Service;
+package server.william.ffats.Service;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -20,86 +20,88 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import client.william.ffats.Common.Common;
-import client.william.ffats.Model.Request;
-import client.william.ffats.OrderStatus;
-import client.william.ffats.R;
+import java.util.Random;
+
+import server.william.ffats.Common.Common;
+import server.william.ffats.Model.Request;
+import server.william.ffats.OrderStatus;
+import server.william.ffats.R;
 
 public class ListenOrder extends Service implements ChildEventListener {
 
     FirebaseDatabase db;
-    DatabaseReference request;
+    DatabaseReference orders;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        db = FirebaseDatabase.getInstance();
+        orders = db.getReference("Requests");
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        orders.addChildEventListener(this);
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     public ListenOrder() {
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        db = FirebaseDatabase.getInstance();
-        request = db.getReference("Request");
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        request.addChildEventListener(this);
-        return super.onStartCommand(intent, flags, startId);
+        // TODO: Return the communication channel to the service.
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-    }
-
-    @Override
-    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
         Request request = snapshot.getValue(Request.class);
-        showNotification(snapshot.getKey(),request);
+        if (request.getStatus().equals("0"))
+            showNotification(snapshot.getKey(),request);
     }
 
     private void showNotification(String key, Request request) {
-        Intent intent = new Intent(getBaseContext(), OrderStatus.class);
-        intent.putExtra("userPhone",request.getPhone()); //we need put user phone
-
         NotificationManager mNotificationManager;
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(getBaseContext(), "foodStatus");
-        PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 0, intent, 0);
+        Intent ii = new Intent(getBaseContext(), OrderStatus.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 0, ii, 0);
 
         NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
+        //bigText.bigText(verseurl);
         bigText.setBigContentTitle("Your order was updated");
-        bigText.setSummaryText("Order #"+key+" was updated to "+ Common.convertCodeToStatus(request.getStatus()));
+        bigText.setSummaryText("You have new order #" +key);
 
         mBuilder.setContentIntent(pendingIntent);
         mBuilder.setSmallIcon(R.mipmap.ic_launcher);
         mBuilder.setContentTitle("Your order was updated");
-        mBuilder.setContentText("Order #"+key+" was updated to "+ Common.convertCodeToStatus(request.getStatus()));
+        mBuilder.setContentText("You have new order #" +key);
         mBuilder.setPriority(Notification.PRIORITY_MAX);
         mBuilder.setStyle(bigText);
 
         mNotificationManager =
                 (NotificationManager) getBaseContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+// === Removed some obsoletes
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
             String channelId = "foodStatus";
-            NotificationChannel channel=
-                    new NotificationChannel(channelId,"foodStatus",NotificationManager.IMPORTANCE_HIGH);
-            NotificationManager notificationManager=getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    "foodStatus",
+                    NotificationManager.IMPORTANCE_HIGH);
             mNotificationManager.createNotificationChannel(channel);
             mBuilder.setChannelId(channelId);
-
         }
+        //Get random id
+        int randomInt = new Random().nextInt(9999-1)+1;
+        mNotificationManager.notify(randomInt, mBuilder.build());
+    }
 
-        mNotificationManager.notify(1, mBuilder.build());
-
+    @Override
+    public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
 
     }
 

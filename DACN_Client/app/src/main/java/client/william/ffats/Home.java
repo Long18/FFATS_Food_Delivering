@@ -23,10 +23,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,7 +33,7 @@ import client.william.ffats.Interface.ItemClickListener;
 import client.william.ffats.Model.Category;
 import client.william.ffats.Service.ListenOrder;
 import client.william.ffats.ViewHolder.MenuViewHolder;
-import client.william.ffats.databinding.ActivityHomeBinding;
+import io.paperdb.Paper;
 
 
 public class Home extends AppCompatActivity
@@ -67,7 +63,7 @@ public class Home extends AppCompatActivity
         category.keepSynced(true);
 
         // init paper
-        //Paper.init(this);
+        Paper.init(this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -176,6 +172,8 @@ public class Home extends AppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.refresh)
+            loadMenu();
         return super.onOptionsItemSelected(item);
     }
 
@@ -202,7 +200,7 @@ public class Home extends AppCompatActivity
         } else if (id == R.id.nav_support) {
 
             // delete remember user and password
-            //Paper.book().destroy();
+            Paper.book().destroy();
 
             Intent mainActivity = new Intent(Home.this, MainActivity.class);
             mainActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

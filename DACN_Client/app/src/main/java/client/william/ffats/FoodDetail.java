@@ -19,6 +19,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
 import client.william.ffats.Model.Food;
 import client.william.ffats.Model.Order;
@@ -77,7 +78,12 @@ public class FoodDetail extends AppCompatActivity {
         if (getIntent() != null)
             foodId = getIntent().getStringExtra("FoodId");
         if (!foodId.isEmpty()){
-            getDetailFood(foodId);
+            if (Common.isConnectedToInternet(getBaseContext()))
+                getDetailFood(foodId);
+            else {
+                Toast.makeText(FoodDetail.this, "Please check your internet", Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
     }
 
