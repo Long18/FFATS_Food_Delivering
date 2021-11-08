@@ -1,13 +1,10 @@
-package client.william.ffats;
+package client.william.ffats.Account;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -22,11 +19,15 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.rey.material.widget.CheckBox;
 
 import client.william.ffats.Common.Common;
+import client.william.ffats.Database.SessionManager;
+import client.william.ffats.Home;
 import client.william.ffats.Model.User;
+import client.william.ffats.R;
 import io.paperdb.Paper;
 
 public class activity_sign_in extends AppCompatActivity {
@@ -71,38 +72,50 @@ public class activity_sign_in extends AppCompatActivity {
                     mDialog.setIndeterminateDrawable(drawable);
                     mDialog.show();
 
-                    table_user.addValueEventListener(new ValueEventListener() {
+                    //Database
+                    Query checkUser = FirebaseDatabase.getInstance().getReference("user").orderByChild("phone").equalTo(editPhone.getText().toString());
+
+                    checkUser.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                editPhone.setError(null);
 
-                            if (dataSnapshot.child(editPhone.getText().toString()).exists()) {
+                                String systemPassword = snapshot.child(editPhone.getText().toString()).child("password").getValue(String.class);
+                                if (systemPassword.equals(edtPassword.getText().toString())) {
+                                    edtPassword.setError(null);
 
-                                mDialog.dismiss();
-                                User user = dataSnapshot.child(editPhone.getText().toString()).getValue(User.class);
-                                user.setPhone(editPhone.getText().toString());
-                                if (user.getPassword().equals(edtPassword.getText().toString())) {
-                                    {
-                                        Intent homeInten = new Intent(activity_sign_in.this, Home.class);
-                                        Common.currentUser = user;
-                                        startActivity(homeInten);
-                                        finish();
-                                        Toast.makeText(activity_sign_in.this, "OK", Toast.LENGTH_SHORT).show();
-                                    }
+                                    startActivity(new Intent(activity_sign_in.this, Home.class));
+                                    finish();
+
+                                    String mName = snapshot.child(editPhone.getText().toString()).child("name").getValue(String.class);
+                                    String mPhoneNo = snapshot.child(editPhone.getText().toString()).child("phone").getValue(String.class);
+                                    String mPassword = snapshot.child(editPhone.getText().toString()).child("password").getValue(String.class);
+
+                                    //Create Database Store
+                                    SessionManager sessionManager = new SessionManager(activity_sign_in.this, SessionManager.SESSION_USER);
+                                    sessionManager.createLoginSession(mName, mPhoneNo, mPassword);
+
+                                    mDialog.dismiss();
+                                    Toast.makeText(activity_sign_in.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+
+
                                 } else {
-                                    Toast.makeText(activity_sign_in.this, "Wrong password", Toast.LENGTH_SHORT).show();
+                                    mDialog.dismiss();
+                                    Toast.makeText(activity_sign_in.this, "Sai mật khẩu", Toast.LENGTH_SHORT).show();
                                 }
                             } else {
                                 mDialog.dismiss();
-                                Toast.makeText(activity_sign_in.this, "Not Found", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(activity_sign_in.this, "Tài khoản không tồn tại", Toast.LENGTH_SHORT).show();
                             }
                         }
 
-
                         @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(activity_sign_in.this, error.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
+
                 }else{
                     Toast.makeText(activity_sign_in.this, "Please check internet", Toast.LENGTH_SHORT).show();
                     return;

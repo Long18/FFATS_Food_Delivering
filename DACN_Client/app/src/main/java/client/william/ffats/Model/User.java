@@ -1,28 +1,18 @@
 package client.william.ffats.Model;
 
+import com.google.android.material.textfield.TextInputLayout;
+
 public class User {
     private String Name;
     private String Password;
     private String Phone;
     private String IsStaff;
 
-    public User() {
-    }
-
-    public User(String name) {
-        Name = name;
-    }
-
-    public User(String name, String password) {
-        Name = name;
-        Password = password;
-        IsStaff = "false";
-    }
-
     public User(String name, String password, String phone) {
         Name = name;
         Password = password;
         Phone = phone;
+        IsStaff = "false";
     }
 
     public String getIsStaff() {

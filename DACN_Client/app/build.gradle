@@ -59,6 +59,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
     implementation 'androidx.navigation:navigation-fragment:2.3.5'
     implementation 'androidx.navigation:navigation-ui:2.3.5'
+    implementation 'com.google.firebase:firebase-firestore:24.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4-alpha03'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0-alpha03'
@@ -76,6 +77,8 @@ dependencies {
     implementation 'com.firebaseui:firebase-ui-database:8.0.0'
 
     //Etc
+    implementation 'com.hbb20:ccp:2.3.1'
+    implementation 'com.chaos.view:pinview:1.4.4'
     implementation 'com.github.rey5137:material:1.3.1'
     implementation 'io.github.pilgr:paperdb:2.7.1'
     implementation 'com.github.mancj:MaterialSearchBar:0.8.5'

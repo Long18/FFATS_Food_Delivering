@@ -6,8 +6,17 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <permission android:name="com.name.name.permission.C2D_MESSAGE"
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+
+    <permission
+        android:name="com.name.name.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
+
     <uses-permission android:name="com.name.name.permission.C2D_MESSAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
@@ -19,10 +28,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FFATS.NoActionBar"
         tools:replace="android:theme">
+        <activity
+            android:name=".Account.New_Password"
+            android:exported="false" />
+        <activity
+            android:name=".Account.Verify_OTP"
+            android:exported="false" />
+
         <service
             android:name=".Service.ListenOrder"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
             android:name=".OrderStatus"
@@ -42,10 +58,10 @@
             android:label="@string/title_activity_home"
             android:theme="@style/Theme.FFATS.NoActionBar" />
         <activity
-            android:name=".activity_sign_up"
+            android:name=".Account.activity_sign_up"
             android:exported="true" />
         <activity
-            android:name=".activity_sign_in"
+            android:name=".Account.activity_sign_in"
             android:exported="true" />
         <activity
             android:name=".MainActivity"
@@ -56,6 +72,25 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service android:name="com.google.firebase.components.ComponentDiscoveryService">
+            <meta-data
+                android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
+                android:value="com.google.firebase.components.ComponentRegistrar" />
+            <meta-data
+                android:name="com.google.firebase.components:com.google.firebase.firestore.FirestoreRegistrar"
+                android:value="com.google.firebase.components.ComponentRegistrar" />
+            <meta-data
+                android:name="com.google.firebase.components:com.google.firebase.iid.Registrar"
+                android:value="com.google.firebase.components.ComponentRegistrar" />
+            <meta-data
+                android:name="com.google.firebase.components:com.google.firebase.auth.FirebaseAuthRegistrar"
+                android:value="com.google.firebase.components.ComponentRegistrar" />
+            <meta-data
+                android:name="com.google.firebase.components:com.google.firebase.database.DatabaseRegistrar"
+                android:value="com.google.firebase.components.ComponentRegistrar" />
+        </service>
+
     </application>
 
 </manifest>

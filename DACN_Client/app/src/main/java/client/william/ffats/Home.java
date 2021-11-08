@@ -28,9 +28,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.HashMap;
+
 import client.william.ffats.Common.Common;
+import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
 import client.william.ffats.Model.Category;
+import client.william.ffats.Model.User;
 import client.william.ffats.Service.ListenOrder;
 import client.william.ffats.ViewHolder.MenuViewHolder;
 import io.paperdb.Paper;
@@ -86,7 +90,11 @@ public class Home extends AppCompatActivity
         //set name for user
         View headerView = navigationView.getHeaderView(0);
         TextFullName = headerView.findViewById(R.id.txtFullName);
-        TextFullName.setText(Common.currentUser.getName());
+
+        SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        HashMap<String, String> userInformation = sessionManager.getInfomationUser();
+        TextFullName.setText(userInformation.get(SessionManager.KEY_FULLNAME));
+
 
         // Load menu
         recycler_menu = findViewById(R.id.recycler_menu);

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity_sign_in">
+    tools:context=".Account.activity_sign_in">
 
     <LinearLayout
         android:orientation="vertical"
@@ -56,7 +56,7 @@
         </LinearLayout>
 
         <TextView
-            android:paddingTop="40dp"
+            android:paddingTop="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/text_signup"
@@ -66,9 +66,25 @@
             android:layout_height="match_parent"
             android:text="Phone number"
             android:textColor="@color/black"
-            android:paddingTop="10dp"/>
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
+
+        <com.hbb20.CountryCodePicker
+            app:ccpDialog_searchEditTextTint="@color/colorPrimary"
+            android:id="@+id/countryNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:ccp_autoDetectCountry="true"
+            app:ccp_showFlag="true"
+            app:ccp_showNameCode="true"
+            app:ccp_showFullName="true"
+            app:ccp_autoDetectLanguage="true"
+            android:background="@drawable/black_border"
+            android:padding="5dp"/>
+
 
         <com.google.android.material.textfield.TextInputLayout
+            android:paddingTop="10dp"
             android:id="@+id/txtLayoutPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -80,7 +96,52 @@
                 android:hint="Enter your phone number"
                 android:inputType="number"
                 android:textColor="@color/black"
-                android:fontFamily="@font/neutra_light"
+                android:textSize="18dp"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="First Name"
+            android:textColor="@color/black"
+            android:paddingTop="10dp"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/txtLayoutFName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txtEditTextFName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter your first name"
+                android:inputType="text"
+                android:textColor="@color/black"
+                android:textSize="18dp"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Last Name"
+            android:textColor="@color/black"
+            android:paddingTop="10dp"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/txtLayoutLName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txtEditTextLName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter your last name"
+                android:inputType="text"
+                android:textColor="@color/black"
                 android:textSize="18dp"/>
 
         </com.google.android.material.textfield.TextInputLayout>
