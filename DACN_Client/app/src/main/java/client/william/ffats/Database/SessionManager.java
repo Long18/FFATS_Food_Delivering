@@ -49,4 +49,29 @@ public class SessionManager {
 
         return userData;
     }
+
+    public boolean checkUserLogin() {
+        if (userSession.getBoolean(IS_LOGIN, false)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void checkUserLogout() {
+        editor.clear();
+
+        editor.putString(KEY_FULLNAME, null);
+        editor.putString(KEY_USERNAME, null);
+        editor.putString(KEY_EMAIL, null);
+        editor.putString(KEY_PHONENUMBER, null);
+        editor.putString(KEY_PASSWORD, null);
+        editor.putString(KEY_DATE, null);
+        editor.putString(KEY_GENDER, null);
+
+        userSession.getBoolean(IS_LOGIN,false);
+
+        editor.commit();
+
+    }
 }

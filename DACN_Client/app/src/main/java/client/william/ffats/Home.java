@@ -50,34 +50,33 @@ public class Home extends AppCompatActivity
     RecyclerView.LayoutManager linearLayoutManager;
     FirebaseRecyclerAdapter<Category, MenuViewHolder> adapter;
 
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (v.getId() == R.id.fab){
+                //region Add to cart
+                Intent cartIntent = new Intent(Home.this, Cart.class);
+                startActivity(cartIntent);
+                //endregion
+            }
+        }
+    };
+
+    //region Activity Function
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        insertData();
+        viewConstructor();
+
+    }
+    private void viewConstructor() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Menu");
         setSupportActionBar(toolbar);
 
-        //FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-
-        // Init Firebase
-        database = FirebaseDatabase.getInstance();
-        category = database.getReference("categories");
-        category.keepSynced(true);
-
-        // init paper
-        Paper.init(this);
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // add to cart
-                Intent cartIntent = new Intent(Home.this, Cart.class);
-                startActivity(cartIntent);
-            }
-        });
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -85,6 +84,9 @@ public class Home extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(onClickListener);
 
 
         //set name for user
@@ -102,17 +104,31 @@ public class Home extends AppCompatActivity
         linearLayoutManager = new LinearLayoutManager(this);
         recycler_menu.setLayoutManager(linearLayoutManager);
 
+        //Check Internet
+
         if (Common.isConnectedToInternet(getBaseContext()))
             loadMenu();
         else {
             Toast.makeText(Home.this, "Please Check Internet Connection", Toast.LENGTH_LONG).show();
             return;
         }
+
         // register the service
         Intent service = new Intent(Home.this, ListenOrder.class);
         startService(service);
+
     }
 
+    private void insertData() {
+        database = FirebaseDatabase.getInstance();
+        category = database.getReference("categories");
+        category.keepSynced(true);
+
+        Paper.init(this);
+    }
+    //endregion
+
+    //region Function
     private void loadMenu() {
         FirebaseRecyclerOptions<Category> options =
                 new FirebaseRecyclerOptions.Builder<Category>()
@@ -153,7 +169,6 @@ public class Home extends AppCompatActivity
         adapter.notifyDataSetChanged();
         recycler_menu.setAdapter(adapter);
     }
-
 
     @Override
     public void onBackPressed() {
@@ -208,6 +223,10 @@ public class Home extends AppCompatActivity
         } else if (id == R.id.nav_support) {
 
             // delete remember user and password
+
+            SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+            sessionManager.checkUserLogout();
+
             Paper.book().destroy();
 
             Intent mainActivity = new Intent(Home.this, MainActivity.class);
@@ -220,5 +239,5 @@ public class Home extends AppCompatActivity
         return true;
     }
 
-
+    //endregion
 }

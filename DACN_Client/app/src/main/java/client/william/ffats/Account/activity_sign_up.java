@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -15,82 +17,26 @@ import client.william.ffats.R;
 
 public class activity_sign_up extends AppCompatActivity {
 
-    TextInputLayout phoneNumber, fName,lName;
+    TextInputLayout txtInPhoneNumber, txtInFullName, txtInLastName;
     CountryCodePicker countryNumber;
-    Button btnNext;
+    Button btnContinue;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_sign_up);
+    boolean phoneCheck = false;
+    boolean fullNameCheck = false;
+    boolean lastNameCheck = false;
 
-        phoneNumber = findViewById(R.id.txtLayoutPhone);
-        fName = findViewById(R.id.txtLayoutFName);
-        lName = findViewById(R.id.txtLayoutLName);
-        countryNumber = findViewById(R.id.countryNumber);
-        btnNext = findViewById(R.id.btnContinue);
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (v.getId() == R.id.signUp_btnContinue){
 
-//        FirebaseDatabase database = FirebaseDatabase.getInstance();
-//        final DatabaseReference table_user = database.getReference("user");
-//
-//        btnNext.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                if (Common.isConnectedToInternet(getBaseContext())) {
-//
-//                    final ProgressDialog mDialog = new ProgressDialog(activity_sign_up.this);
-//
-//                    mDialog.setMessage("Please wait...");
-//                    Drawable drawable = new ProgressBar(activity_sign_up.this).getIndeterminateDrawable().mutate();
-//                    drawable.setColorFilter(ContextCompat.getColor(activity_sign_up.this, R.color.colorPrimary),
-//                            PorterDuff.Mode.SRC_IN);
-//                    mDialog.setIndeterminateDrawable(drawable);
-//                    mDialog.show();
-//
-//                    table_user.addValueEventListener(new ValueEventListener() {
-//                        @Override
-//                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//
-//                            if (dataSnapshot.child(editPhone.getText().toString()).exists()) {
-//                                mDialog.dismiss();
-//                                Toast.makeText(activity_sign_up.this, "Phone Number Already Register", Toast.LENGTH_SHORT).show();
-//
-//                            } else {
-//                                mDialog.dismiss();
-//                                User user = new User(editPhone.getText().toString());
-//                                table_user.child(editPhone.getText().toString()).setValue(user);
-//                                Toast.makeText(activity_sign_up.this, "Register Success", Toast.LENGTH_SHORT).show();
-//                                finish();
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                        }
-//                    });
-//                }
-//                else {
-//                    Toast.makeText(activity_sign_up.this, "Please check internet", Toast.LENGTH_SHORT).show();
-//                    return;
-//                }
-//            }
-//        });
 
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!validatePhoneNumber()) {
-                    return;
-                }
 
-                String getUserPhoneNumber = phoneNumber.getEditText().getText().toString().trim();// Get Phone Num
-                String getFName = fName.getEditText().getText().toString().trim();// Get First Name
-                String getLName = lName.getEditText().getText().toString().trim();// Get Last Name
+                String getUserPhoneNumber = txtInPhoneNumber.getEditText().getText().toString().trim();// Get Phone Num
+                String getFName = txtInFullName.getEditText().getText().toString().trim();// Get First Name
+                String getLName = txtInLastName.getEditText().getText().toString().trim();// Get Last Name
 
-                String fullName = getFName + " " + getLName;
+                String fullName = getLName + " " + getFName;
 
                 if (getUserPhoneNumber.charAt(0) == '0') {
                     getUserPhoneNumber = getUserPhoneNumber.substring(1);
@@ -105,21 +51,120 @@ public class activity_sign_up extends AppCompatActivity {
                 intent.putExtra("ToDO", "createNewUser");
 
                 startActivity(intent);
+                finish();
+            }
+        }
+    };
+
+
+    //region Function Activity
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.activity_sign_up);
+
+
+        viewConstructor();
+
+
+    }
+
+    private void viewConstructor() {
+        txtInPhoneNumber = findViewById(R.id.txtLayoutPhone);
+        txtInFullName = findViewById(R.id.txtLayoutFName);
+        txtInLastName = findViewById(R.id.txtLayoutLName);
+        countryNumber = findViewById(R.id.countryNumber);
+        btnContinue = findViewById(R.id.signUp_btnContinue);
+
+        btnContinue.setOnClickListener(onClickListener);
+
+        txtInPhoneNumber.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String result = Validate.validatePhoneNumber(txtInPhoneNumber.getEditText().getText().toString());
+                if (result != null){
+                    txtInPhoneNumber.setError(result);
+                    phoneCheck = false;
+                }else{
+                    txtInPhoneNumber.setError(null);
+                    phoneCheck = true;
+                }
+                if (phoneCheck && fullNameCheck && lastNameCheck){
+                    btnContinue.setEnabled(true);
+                }else {
+                    btnContinue.setEnabled(false);
+                }
+            }
+        });
+        txtInFullName.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String result = Validate.validateInput(txtInFullName.getEditText().getText().toString());
+                if (result != null){
+                    txtInFullName.setError(result);
+                    fullNameCheck = false;
+                }else{
+                    txtInFullName.setError(null);
+                    fullNameCheck = true;
+                }
+                if (phoneCheck && fullNameCheck && lastNameCheck){
+                    btnContinue.setEnabled(true);
+                }else {
+                    btnContinue.setEnabled(false);
+                }
+            }
+        });
+        txtInLastName.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String result = Validate.validateInput(txtInLastName.getEditText().getText().toString());
+                if (result != null){
+                    txtInLastName.setError(result);
+                    lastNameCheck = false;
+                }else{
+                    txtInLastName.setError(null);
+                    lastNameCheck = true;
+                }
+                if (phoneCheck && fullNameCheck && lastNameCheck){
+                    btnContinue.setEnabled(true);
+                }else {
+                    btnContinue.setEnabled(false);
+                }
             }
         });
     }
+    //endregion
 
-    private boolean validatePhoneNumber() {
-        String val = phoneNumber.getEditText().getText().toString().trim();
-        if (val.isEmpty()) {
-            phoneNumber.setError("Số điện thoại không được để trống!");
-            return false;
-        }
-        else {
-            phoneNumber.setError(null);
-            phoneNumber.setErrorEnabled(false);
-            return true;
-        }
-    }
 
 }

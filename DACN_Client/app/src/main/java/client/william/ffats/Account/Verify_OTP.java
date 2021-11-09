@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -35,35 +37,83 @@ public class Verify_OTP extends AppCompatActivity {
     TextView txtDescription;
     Button btnContinue;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_verify_otp);
+    Boolean numberOTPCheck = false;
 
-
-        pinView = findViewById(R.id.pin_view);
-        txtDescription = findViewById(R.id.txtDescription);
-        btnContinue = findViewById(R.id.btnContinue);
-
-        phoneNumber = getIntent().getStringExtra("phoneNo");
-        fullName = getIntent().getStringExtra("name");
-        ToDO = getIntent().getStringExtra("ToDO");
-
-        txtDescription.setText("We texted you a verification code to your phone number: " +phoneNumber);
-
-        sendCode(phoneNumber);
-
-        btnContinue.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            //region Auto set OTP
+            if (v.getId() == R.id.verifyOTP_btnContinue){
                 String code = pinView.getText().toString();
                 if (!code.isEmpty()) {
                     verifyCode(code);
                 }
             }
+            //endregion
+        }
+    };
+
+    //region Activity Function
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_verify_otp);
+
+        importData();
+        viewConstructor();
+
+
+    }
+
+    private void viewConstructor() {
+        pinView = findViewById(R.id.pin_view);
+        txtDescription = findViewById(R.id.txtDescription);
+        btnContinue = findViewById(R.id.verifyOTP_btnContinue);
+
+        btnContinue.setOnClickListener(onClickListener);
+
+        txtDescription.setText("We texted you a verification code to your phone number: " +phoneNumber);
+
+        sendCode(phoneNumber);
+
+        pinView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String result = Validate.validateInput(pinView.getText().toString());
+                if (result != null){
+                    numberOTPCheck = false;
+                }else{
+                    numberOTPCheck = true;
+                }
+                if (numberOTPCheck){
+                    btnContinue.setEnabled(true);
+                }else {
+                    btnContinue.setEnabled(false);
+                }
+            }
         });
     }
 
+
+    private void importData() {
+        phoneNumber = getIntent().getStringExtra("phoneNo");
+        fullName = getIntent().getStringExtra("name");
+        ToDO = getIntent().getStringExtra("ToDO");
+    }
+    //endregion
+
+
+    //region Function
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
         FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
         firebaseAuth.signInWithCredential(credential)
@@ -80,9 +130,11 @@ public class Verify_OTP extends AppCompatActivity {
                                 //inputUser();
                                 Intent intent = new Intent(getApplicationContext(), New_Password.class);
 
-                                intent.putExtra("phoneNo", phoneNumber); //Truyền chuỗi số điện thoại qua OTP activity
-                                intent.putExtra("name", fullName);
-                                intent.putExtra("ToDO", "createNewUser");
+                                Bundle bundle = new Bundle();
+                                bundle.putString("phoneNo", phoneNumber); //Truyền chuỗi số điện thoại qua OTP activity
+                                bundle.putString("name", fullName);
+                                bundle.putString("ToDO", "createNewUser");
+                                intent.putExtras(bundle);
 
                                 startActivity(intent);
                             }
@@ -138,6 +190,8 @@ public class Verify_OTP extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
+    //endregion
 
 
 }

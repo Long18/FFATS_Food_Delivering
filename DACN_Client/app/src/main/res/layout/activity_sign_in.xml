@@ -52,7 +52,8 @@
                 android:paddingTop="2dp"
                 android:textSize="16dp"
                 android:textColor="@color/colorSecondary"
-                android:text="Create an account"/>
+                android:text="Create an account"
+                android:onClick="Register"/>
         </LinearLayout>
 
             <TextView
@@ -61,6 +62,19 @@
                 android:text="Phone number"
                 android:textColor="@color/black"
                 android:paddingTop="30dp"/>
+
+            <com.hbb20.CountryCodePicker
+                app:ccpDialog_searchEditTextTint="@color/colorPrimary"
+                android:id="@+id/countryNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:ccp_autoDetectCountry="true"
+                app:ccp_showFlag="true"
+                app:ccp_showNameCode="true"
+                app:ccp_showFullName="true"
+                app:ccp_autoDetectLanguage="true"
+                android:background="@drawable/black_border"
+                android:padding="5dp"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/txtLayoutPhone"
@@ -115,13 +129,14 @@
             app:cbd_tickColor="@color/colorAccent"/>
 
         <Button
-            android:id="@+id/btnContinue"
+            android:id="@+id/signIn_btnContinue"
             android:text="Continue"
             android:textColor="@color/white"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="8dp"
-            android:background="@drawable/primary_button_disable"
+            android:background="@drawable/btn_normal"
+            android:enabled="false"
             android:shadowColor="@color/neutralsText"/>
 
 

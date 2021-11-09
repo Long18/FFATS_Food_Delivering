@@ -12,6 +12,7 @@ public class Common {
     public static final String UPDATE = "Update";
     public static final String USER_KEY = "User";
     public static final String PWD_KEY = "Password";
+    public static final String CCP_KEY = "CountryCodePicker";
 
     public static String convertCodeToStatus(String status) {
         if (status.equals("0"))

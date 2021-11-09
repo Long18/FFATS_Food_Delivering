@@ -27,11 +27,13 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
+import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Model.Order;
 import client.william.ffats.Model.Request;
 import client.william.ffats.ViewHolder.CartAdapter;
@@ -95,12 +97,15 @@ public class Cart extends AppCompatActivity {
         alertDialog.setView(edtAddress);
         alertDialog.setIcon(R.drawable.shopping_basket);
 
+        SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        HashMap<String, String> userInformation = sessionManager.getInfomationUser();
+
         alertDialog.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Request request = new Request(
-                        Common.currentUser.getPhone(),
-                        Common.currentUser.getName(),
+                        userInformation.get(SessionManager.KEY_PHONENUMBER),
+                        userInformation.get(SessionManager.KEY_FULLNAME),
                         edtAddress.getText().toString(),
                         txtTotalPrice.getText().toString(),
                         cart

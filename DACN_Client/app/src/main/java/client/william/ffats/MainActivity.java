@@ -20,12 +20,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import client.william.ffats.Account.activity_sign_in;
 import client.william.ffats.Account.activity_sign_up;
 import client.william.ffats.Common.Common;
-import client.william.ffats.Model.User;
+import client.william.ffats.Database.SessionManager;
 import io.paperdb.Paper;
 
 
@@ -37,92 +38,136 @@ public class MainActivity extends AppCompatActivity {
     FirebaseDatabase db;
     DatabaseReference table_user;
 
+    String rmbNumberPhone, rmbPassword, rmbCodeCountry;
+
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            //region btnSignIn
+            if (v.getId() == R.id.btnSignIn){
+                startActivity(new Intent(MainActivity.this, activity_sign_in.class));
+            }
+            //endregion
+            //region btnSignUp
+            if (v.getId() == R.id.btnSignUp){
+                startActivity(new Intent(MainActivity.this, activity_sign_up.class));
+            }
+            //endregion
+        }
+    };
+
+    //region Activity Function
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        insertData();
+        viewConstructor();
+
+    }
+
+    private void insertData() {
+        db = FirebaseDatabase.getInstance();
+        table_user = db.getReference("user");
+    }
+
+    private void viewConstructor() {
         btnSignIn = findViewById(R.id.btnSignIn);
         btnSignUp = findViewById(R.id.btnSignUp);
         txtSlogan = findViewById(R.id.txtSlogan);
 
-        db = FirebaseDatabase.getInstance();
-        table_user = db.getReference("user");
-
         Paper.init(this);
 
-        btnSignIn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, activity_sign_in.class));
-            }
-        });
+        btnSignIn.setOnClickListener(onClickListener);
+        btnSignUp.setOnClickListener(onClickListener);
 
-        btnSignUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, activity_sign_up.class));
-            }
-        });
+        //Auto login when already click remember button
+        rmbNumberPhone = Paper.book().read(Common.USER_KEY);
+        rmbPassword = Paper.book().read(Common.PWD_KEY);
+        rmbCodeCountry = Paper.book().read(Common.CCP_KEY);
 
-        //Check User remember
-        String user = Paper.book().read(Common.USER_KEY);
-        String pwd = Paper.book().read(Common.PWD_KEY);
-        if (user != null && pwd != null) {
-            if (!user.isEmpty() && !pwd.isEmpty()) {
-                //login(user,pwd);
+        SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        if(sessionManager.checkUserLogin()){
+            if (rmbNumberPhone != null && rmbPassword != null) {
+                if (!rmbNumberPhone.isEmpty() && !rmbPassword.isEmpty()) {
+                    login(rmbNumberPhone, rmbPassword, rmbCodeCountry);
+                }
             }
         }
 
     }
+    //endregion
 
-//    private void login(String phone, String pwd) {
-//        if(Common.isConnectedToInternet(getBaseContext())) {
-//
-//
-//            final ProgressDialog mDialog = new ProgressDialog(MainActivity.this);
-//            mDialog.setMessage("Please wait...");
-//            Drawable drawable = new ProgressBar(MainActivity.this).getIndeterminateDrawable().mutate();
-//            drawable.setColorFilter(ContextCompat.getColor(MainActivity.this, R.color.colorPrimary),
-//                    PorterDuff.Mode.SRC_IN);
-//            mDialog.setIndeterminateDrawable(drawable);
-//            mDialog.show();
-//
-//            table_user.addValueEventListener(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//
-//                    if (dataSnapshot.child(phone).exists()) {
-//
-//                        mDialog.dismiss();
-//                        User user = dataSnapshot.child(phone).getValue(User.class);
-//                        user.setPhone(phone);
-//                        if (user.getPassword().equals(pwd)){
-//                            {
-//                                Intent homeInten = new Intent(MainActivity.this, Home.class);
-//                                Common.currentUser = user;
-//                                startActivity(homeInten);
-//                                finish();
-//                                Toast.makeText(MainActivity.this, "OK", Toast.LENGTH_SHORT).show();
-//                            }
-//                        } else {
-//                            Toast.makeText(MainActivity.this, "Wrong password", Toast.LENGTH_SHORT).show();
-//                        }
-//                    } else {
-//                        mDialog.dismiss();
-//                        Toast.makeText(MainActivity.this, "Not Found", Toast.LENGTH_SHORT).show();
-//                    }
-//                }
-//
-//
-//                @Override
-//                public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                }
-//            });
-//        }else{
-//            Toast.makeText(MainActivity.this, "Please check internet", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//    }
+    //region Function
+    private void login(String phone, String pwd,String cpp) {
+        if(Common.isConnectedToInternet(getBaseContext())) {
+
+            final ProgressDialog mDialog = new ProgressDialog(MainActivity.this);
+            mDialog.setMessage("Please wait...");
+            Drawable drawable = new ProgressBar(MainActivity.this).getIndeterminateDrawable().mutate();
+            drawable.setColorFilter(ContextCompat.getColor(MainActivity.this, R.color.colorPrimary),
+                    PorterDuff.Mode.SRC_IN);
+            mDialog.setIndeterminateDrawable(drawable);
+            mDialog.show();
+
+            String getUserPhoneNumber = phone;// Get Phone Num
+
+            if (getUserPhoneNumber.charAt(0) == '0') {
+                getUserPhoneNumber = getUserPhoneNumber.substring(1);
+            }
+
+            final String phoneNo = "+" + cpp + getUserPhoneNumber;
+
+            //Database
+            Query checkUser = FirebaseDatabase.getInstance().getReference("user").orderByChild("phone").equalTo(phoneNo);
+
+            checkUser.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+
+
+                        String systemPassword = snapshot.child(phoneNo).child("password").getValue(String.class);
+
+                        if (systemPassword.equals(pwd)) {
+
+
+                            startActivity(new Intent(MainActivity.this, Home.class));
+                            finish();
+
+                            String mName = snapshot.child(phoneNo).child("name").getValue(String.class);
+                            String mPhoneNo = snapshot.child(phoneNo).child("phone").getValue(String.class);
+                            String mPassword = snapshot.child(phoneNo).child("password").getValue(String.class);
+
+                            //Create Database Store
+                            SessionManager sessionManager = new SessionManager(MainActivity.this, SessionManager.SESSION_USER);
+                            sessionManager.createLoginSession(mName, mPhoneNo, mPassword);
+
+                            mDialog.dismiss();
+                            Toast.makeText(MainActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+
+
+                        } else {
+                            mDialog.dismiss();
+                            Toast.makeText(MainActivity.this, "Sai mật khẩu", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        mDialog.dismiss();
+                        Toast.makeText(MainActivity.this, "Tài khoản không tồn tại", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(MainActivity.this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        }else{
+            Toast.makeText(MainActivity.this, "Please check internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+    }
+    //endregion
 }

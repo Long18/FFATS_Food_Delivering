@@ -17,7 +17,10 @@ import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
+
 import client.william.ffats.Common.Common;
+import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
 import client.william.ffats.Model.Request;
 import client.william.ffats.ViewHolder.OrderViewHolder;
@@ -40,7 +43,10 @@ public class OrderStatus extends AppCompatActivity {
 
         database = FirebaseDatabase.getInstance();
         requests = database.getReference("Requests");
-        phone = Common.currentUser.getPhone();
+
+        SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        HashMap<String, String> userInformation = sessionManager.getInfomationUser();
+        phone = userInformation.get(SessionManager.KEY_PHONENUMBER);
 
         recyclerView = findViewById(R.id.listOrders);
         recyclerView.setHasFixedSize(true);
@@ -50,7 +56,7 @@ public class OrderStatus extends AppCompatActivity {
 
         //Click to notification
         if(getIntent() != null) {
-            loadOrders(Common.currentUser.getPhone());
+            loadOrders(userInformation.get(SessionManager.KEY_PHONENUMBER));
         }
         else {
             loadOrders(getIntent().getStringExtra("userPhone"));
