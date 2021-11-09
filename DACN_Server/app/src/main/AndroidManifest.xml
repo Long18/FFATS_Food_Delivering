@@ -21,10 +21,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FFATS.NoActionBar"
         tools:replace="android:theme">
+        <activity
+            android:name=".OrderDetail"
+            android:exported="false" />
+
         <service
             android:name=".Service.ListenOrder"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

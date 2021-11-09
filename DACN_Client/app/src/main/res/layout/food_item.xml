@@ -14,19 +14,36 @@
         <ImageView
             android:id="@+id/food_image"
             android:scaleType="centerCrop"
-            android:src="@drawable/logo"
+            android:src="@drawable/wait"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-        <TextView
-            android:id="@+id/food_name"
-            android:textColor="@color/black"
-            android:text="Tên món"
-            android:textSize="20sp"
-            android:gravity="center"
-            android:background="@color/overlayBackground"
+        <LinearLayout
+            android:weightSum="10"
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@color/overlayBackground">
+
+            <TextView
+                android:id="@+id/food_name"
+                android:textColor="@color/black"
+                android:text="Tên món"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:layout_weight="9"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+            <ImageView
+                android:id="@+id/fav_image"
+                android:src="@drawable/heart"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
+
+        </LinearLayout>
 
 
 

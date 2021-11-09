@@ -24,6 +24,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.rengwuxian.materialedittext.MaterialEditText;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -87,14 +88,23 @@ public class Cart extends AppCompatActivity {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(Cart.this);
         alertDialog.setTitle("One more Step!");
         alertDialog.setMessage("Enter your Address: ");
-        final EditText edtAddress = new EditText(Cart.this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT
-        );
 
-        edtAddress.setLayoutParams(lp);
-        alertDialog.setView(edtAddress);
+//        final EditText edtAddress = new EditText(Cart.this);
+//        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+//                LinearLayout.LayoutParams.MATCH_PARENT,
+//                LinearLayout.LayoutParams.MATCH_PARENT
+//        );
+//        edtAddress.setLayoutParams(lp);
+//        alertDialog.setView(edtAddress);
+
+
+        LayoutInflater inflater = this.getLayoutInflater();
+        View order_address = inflater.inflate(R.layout.order_address_comment,null);
+        alertDialog.setView(order_address);
+
+        MaterialEditText editAdress = order_address.findViewById(R.id.edtAdress);
+        MaterialEditText edtComment = order_address.findViewById(R.id.edtComment);
+
         alertDialog.setIcon(R.drawable.shopping_basket);
 
         SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
@@ -106,11 +116,13 @@ public class Cart extends AppCompatActivity {
                 Request request = new Request(
                         userInformation.get(SessionManager.KEY_PHONENUMBER),
                         userInformation.get(SessionManager.KEY_FULLNAME),
-                        edtAddress.getText().toString(),
+                        editAdress.getText().toString(),
                         txtTotalPrice.getText().toString(),
+                        "0",
+                        edtComment.getText().toString(),
                         cart
                 );
-// Submit to firebase
+                // Submit to firebase
                 //we will using System.Current to key
                 requests.child(String.valueOf(System.currentTimeMillis())).setValue(request);
                 //deleting cart

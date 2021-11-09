@@ -13,7 +13,7 @@ import client.william.ffats.R;
 public class FoodViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
     public TextView txtFoodName;
-    public ImageView imageFood;
+    public ImageView imageFood,fav_image;
 
     private ItemClickListener itemClickListener;
 
@@ -31,6 +31,7 @@ public class FoodViewHolder extends RecyclerView.ViewHolder implements View.OnCl
 
         txtFoodName = itemView.findViewById(R.id.food_name);
         imageFood = itemView.findViewById(R.id.food_image);
+        fav_image = itemView.findViewById(R.id.fav_image);
 
         itemView.setOnClickListener(this);
     }

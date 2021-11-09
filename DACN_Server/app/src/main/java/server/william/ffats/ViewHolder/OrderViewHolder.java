@@ -13,7 +13,8 @@ import server.william.ffats.R;
 
 public class OrderViewHolder extends RecyclerView.ViewHolder implements
         View.OnClickListener,
-        View.OnCreateContextMenuListener
+        View.OnCreateContextMenuListener,
+        View.OnLongClickListener
 {
 
     public TextView txtOrderId, txtOrderStatus, txtOrderPhone, txtAddress;
@@ -29,6 +30,7 @@ public class OrderViewHolder extends RecyclerView.ViewHolder implements
 
         itemView.setOnClickListener(this);
         itemView.setOnCreateContextMenuListener(this);
+        itemView.setOnLongClickListener(this);
     }
 
     public void setItemClickListener(ItemClickListener itemClickListener) {
@@ -48,5 +50,11 @@ public class OrderViewHolder extends RecyclerView.ViewHolder implements
 
         menu.add(0,0,getAdapterPosition(), Common.UPDATE);
         menu.add(0,1,getAdapterPosition(), Common.DELETE);
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        itemClickListener.onClick(v, getAdapterPosition(), true);
+        return true;
     }
 }
