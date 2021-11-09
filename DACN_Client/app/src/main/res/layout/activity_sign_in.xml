@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Account.activity_sign_in">
+    tools:context=".Account.Sign_In">
 
     <LinearLayout
         android:orientation="vertical"
@@ -139,8 +139,6 @@
             android:enabled="false"
             android:shadowColor="@color/neutralsText"/>
 
-
-
     </LinearLayout>
 
     <TextView
@@ -149,9 +147,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:gravity="center"
-        android:textSize="16dp"
-        android:textColor="@color/colorSecondary"
+        android:paddingBottom="20dp"
         android:text="Reset your password"
-        android:paddingBottom="20dp"/>
+        android:textColor="@color/colorSecondary"
+        android:textSize="16dp" />
 
 </RelativeLayout>

@@ -1,12 +1,11 @@
 package client.william.ffats.Model;
 
-import com.google.android.material.textfield.TextInputLayout;
-
 public class User {
     private String Name;
     private String Password;
     private String Phone;
     private String IsStaff;
+
 
     public User(String name, String password, String phone) {
         Name = name;

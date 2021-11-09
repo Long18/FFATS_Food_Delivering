@@ -23,8 +23,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import client.william.ffats.Account.activity_sign_in;
-import client.william.ffats.Account.activity_sign_up;
+import client.william.ffats.Account.Sign_In;
+import client.william.ffats.Account.Sign_Up;
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.SessionManager;
 import io.paperdb.Paper;
@@ -45,12 +45,12 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             //region btnSignIn
             if (v.getId() == R.id.btnSignIn){
-                startActivity(new Intent(MainActivity.this, activity_sign_in.class));
+                startActivity(new Intent(MainActivity.this, Sign_In.class));
             }
             //endregion
             //region btnSignUp
             if (v.getId() == R.id.btnSignUp){
-                startActivity(new Intent(MainActivity.this, activity_sign_up.class));
+                startActivity(new Intent(MainActivity.this, Sign_Up.class));
             }
             //endregion
         }

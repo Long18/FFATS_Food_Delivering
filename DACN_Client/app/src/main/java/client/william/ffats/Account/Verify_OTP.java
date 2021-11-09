@@ -32,9 +32,9 @@ import client.william.ffats.R;
 public class Verify_OTP extends AppCompatActivity {
     PinView pinView;
 
-    String phoneNumber,fullName,ToDO,codeSystem;
+    String phoneNumber,fullName,ToDO,codeSystem,Pass;
 
-    TextView txtDescription;
+    TextView txtDescription,txtCaption;
     Button btnContinue;
 
     Boolean numberOTPCheck = false;
@@ -68,9 +68,16 @@ public class Verify_OTP extends AppCompatActivity {
     private void viewConstructor() {
         pinView = findViewById(R.id.pin_view);
         txtDescription = findViewById(R.id.txtDescription);
+        txtCaption = findViewById(R.id.txtOTP);
         btnContinue = findViewById(R.id.verifyOTP_btnContinue);
 
         btnContinue.setOnClickListener(onClickListener);
+
+        if (Pass.equals("updateData")){
+            txtCaption.setText("Reset new password");
+        }else{
+            txtCaption.setText("Sign Up");
+        }
 
         txtDescription.setText("We texted you a verification code to your phone number: " +phoneNumber);
 
@@ -106,9 +113,10 @@ public class Verify_OTP extends AppCompatActivity {
 
 
     private void importData() {
-        phoneNumber = getIntent().getStringExtra("phoneNo");
+        phoneNumber = getIntent().getStringExtra("phone");
         fullName = getIntent().getStringExtra("name");
         ToDO = getIntent().getStringExtra("ToDO");
+        Pass = getIntent().getStringExtra("Pass");
     }
     //endregion
 
@@ -122,26 +130,15 @@ public class Verify_OTP extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
 
-                            if (ToDO.equals("updateData")) {
+                            if (ToDO.equals("createNewUser")) {
+
+                                inputUser();
+                                Toast.makeText(Verify_OTP.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+                            } else if (Pass.equals("updateData")){
                                 updateUser();
                                 Toast.makeText(Verify_OTP.this, "Xác nhận lại thành công!", Toast.LENGTH_SHORT).show();
-                                finish();
-                            } else {
-                                //inputUser();
-                                Intent intent = new Intent(getApplicationContext(), New_Password.class);
-
-                                Bundle bundle = new Bundle();
-                                bundle.putString("phoneNo", phoneNumber); //Truyền chuỗi số điện thoại qua OTP activity
-                                bundle.putString("name", fullName);
-                                bundle.putString("ToDO", "createNewUser");
-                                intent.putExtras(bundle);
-
-                                startActivity(intent);
                             }
-
-
-                            Toast.makeText(Verify_OTP.this, "Xác thực thành công!", Toast.LENGTH_SHORT).show();
-
+                            Toast.makeText(Verify_OTP.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
                         } else {
                             if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
                                 Toast.makeText(Verify_OTP.this, "Không thể xác thực, hãy thử lại!", Toast.LENGTH_SHORT).show();
@@ -150,7 +147,6 @@ public class Verify_OTP extends AppCompatActivity {
                     }
                 });
     }
-
 
     private void sendCode(String phoneNumber) {
         PhoneAuthProvider.getInstance().verifyPhoneNumber(phoneNumber,60, TimeUnit.SECONDS,this,mCallbacks);
@@ -183,10 +179,29 @@ public class Verify_OTP extends AppCompatActivity {
         signInWithPhoneAuthCredential(credential);
     }
 
+    private void inputUser() {
+        Intent intent = new Intent(getApplicationContext(), New_Password.class);
+        Bundle bundle = new Bundle();
+
+        bundle.putString("phone", phoneNumber); //Truyền chuỗi số điện thoại qua OTP activity
+        bundle.putString("name", fullName);
+        bundle.putString("ToDO", "createNewUser");
+        bundle.putString("Pass", "createNewUser");
+        intent.putExtras(bundle);
+
+        startActivity(intent);
+        finish();
+    }
 
     private void updateUser() {
         Intent intent = new Intent(getApplicationContext(),New_Password.class);
-        intent.putExtra("phoneNo",phoneNumber);
+        Bundle bundle = new Bundle();
+
+        bundle.putString("phone",phoneNumber);
+        bundle.putString("ToDO", "updateData");
+        bundle.putString("Pass", "updateData");
+        intent.putExtras(bundle);
+
         startActivity(intent);
         finish();
     }

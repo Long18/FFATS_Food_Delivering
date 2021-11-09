@@ -29,6 +29,9 @@
         android:theme="@style/Theme.FFATS.NoActionBar"
         tools:replace="android:theme">
         <activity
+            android:name=".Account.Reset_Password"
+            android:exported="false" />
+        <activity
             android:name=".Account.New_Password"
             android:exported="false" />
         <activity
@@ -58,10 +61,10 @@
             android:label="@string/title_activity_home"
             android:theme="@style/Theme.FFATS.NoActionBar" />
         <activity
-            android:name=".Account.activity_sign_up"
+            android:name=".Account.Sign_Up"
             android:exported="true" />
         <activity
-            android:name=".Account.activity_sign_in"
+            android:name=".Account.Sign_In"
             android:exported="true" />
         <activity
             android:name=".MainActivity"
@@ -90,7 +93,6 @@
                 android:name="com.google.firebase.components:com.google.firebase.database.DatabaseRegistrar"
                 android:value="com.google.firebase.components.ComponentRegistrar" />
         </service>
-
     </application>
 
 </manifest>

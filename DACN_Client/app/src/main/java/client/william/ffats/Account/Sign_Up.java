@@ -9,15 +9,17 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.android.material.textfield.TextInputLayout;
 import com.hbb20.CountryCodePicker;
 
 import client.william.ffats.R;
 
-public class activity_sign_up extends AppCompatActivity {
+public class Sign_Up extends AppCompatActivity {
 
     TextInputLayout txtInPhoneNumber, txtInFullName, txtInLastName;
+    TextView txtLoginAccount;
     CountryCodePicker countryNumber;
     Button btnContinue;
 
@@ -28,10 +30,8 @@ public class activity_sign_up extends AppCompatActivity {
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            //region Sign Up
             if (v.getId() == R.id.signUp_btnContinue){
-
-
-
                 String getUserPhoneNumber = txtInPhoneNumber.getEditText().getText().toString().trim();// Get Phone Num
                 String getFName = txtInFullName.getEditText().getText().toString().trim();// Get First Name
                 String getLName = txtInLastName.getEditText().getText().toString().trim();// Get Last Name
@@ -46,13 +46,20 @@ public class activity_sign_up extends AppCompatActivity {
 
                 Intent intent = new Intent(getApplicationContext(), Verify_OTP.class);
 
-                intent.putExtra("phoneNo", phoneNo); //Truyền chuỗi số điện thoại qua OTP activity
+                intent.putExtra("phone", phoneNo); //Truyền chuỗi số điện thoại qua OTP activity
                 intent.putExtra("name", fullName);
                 intent.putExtra("ToDO", "createNewUser");
+                intent.putExtra("Pass", "createNewUser");
 
                 startActivity(intent);
                 finish();
             }
+            //endregion
+            //region Login
+            if (v.getId() == R.id.txtLoginAccount) {
+                startActivity(new Intent(Sign_Up.this, Sign_In.class));
+            }
+            //endregion
         }
     };
 
@@ -74,10 +81,9 @@ public class activity_sign_up extends AppCompatActivity {
         txtInPhoneNumber = findViewById(R.id.txtLayoutPhone);
         txtInFullName = findViewById(R.id.txtLayoutFName);
         txtInLastName = findViewById(R.id.txtLayoutLName);
+        txtLoginAccount = findViewById(R.id.txtLoginAccount);
         countryNumber = findViewById(R.id.countryNumber);
         btnContinue = findViewById(R.id.signUp_btnContinue);
-
-        btnContinue.setOnClickListener(onClickListener);
 
         txtInPhoneNumber.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
@@ -163,6 +169,9 @@ public class activity_sign_up extends AppCompatActivity {
                 }
             }
         });
+
+        btnContinue.setOnClickListener(onClickListener);
+        txtLoginAccount.setOnClickListener(onClickListener);
     }
     //endregion
 

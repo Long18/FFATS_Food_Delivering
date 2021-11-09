@@ -21,7 +21,7 @@ public class New_Password extends AppCompatActivity {
     FirebaseDatabase database;
     DatabaseReference table_user;
 
-    String phoneNumber,fullName,ToDO;
+    String phoneNumber,fullName,ToDO,Pass;
 
     TextInputLayout txtInNewPassword, txtInRePassword;
 
@@ -33,17 +33,21 @@ public class New_Password extends AppCompatActivity {
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            //region btn SignIn
+            //region btn Sign_In
             if (v.getId() == R.id.newPassword_btnContinue){
 
                 String newPassword = txtInNewPassword.getEditText().getText().toString().trim();
-                String phoneNumber = getIntent().getStringExtra("phoneNo");
+                String phoneNumber = getIntent().getStringExtra("phone");
                 ToDO = getIntent().getStringExtra("ToDO");
 
                 DatabaseReference reference = FirebaseDatabase.getInstance().getReference("user");
                 reference.child(phoneNumber).child("password").setValue(newPassword);
 
-                addNewUser();
+                if (Pass.equals("updateData")){
+                    updatePassword();
+                }else {
+                    addNewUser();
+                }
 
                 startActivity(new Intent(getApplicationContext(), Home.class));
                 finish();
@@ -52,14 +56,15 @@ public class New_Password extends AppCompatActivity {
         }
     };
 
+
     //region Function Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_password);
 
-        viewConstructor();
         importData();
+        viewConstructor();
 
     }
 
@@ -99,7 +104,6 @@ public class New_Password extends AppCompatActivity {
                 }
             }
         });
-
         txtInRePassword.getEditText().addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -133,9 +137,10 @@ public class New_Password extends AppCompatActivity {
     private void importData(){
         Bundle bundle = getIntent().getExtras();
 
-        phoneNumber = bundle.getString("phoneNo");
+        phoneNumber = bundle.getString("phone");
         fullName = bundle.getString("name");
         ToDO = bundle.getString("ToDO");
+        Pass = bundle.getString("Pass");
     }
     //endregion
 
@@ -149,6 +154,13 @@ public class New_Password extends AppCompatActivity {
 
         table_user.child(phoneNumber).setValue(addNew);
     }
+    private void updatePassword() {
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("user");
+        reference.child(phoneNumber).child("password").setValue(txtInNewPassword.getEditText().getText().toString());
+
+    }
+
     //endregion
 
 
