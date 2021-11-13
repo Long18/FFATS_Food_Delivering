@@ -36,11 +36,17 @@ public class OrderStatus extends AppCompatActivity {
     FirebaseDatabase database;
     DatabaseReference requests;
 
+    //region Activity Function
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_status);
 
+        viewConstructor();
+
+    }
+
+    private void viewConstructor() {
         database = FirebaseDatabase.getInstance();
         requests = database.getReference("Requests");
 
@@ -53,16 +59,18 @@ public class OrderStatus extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
-
-        //Click to notification
+        //region    Click to notification
         if(getIntent() != null) {
             loadOrders(userInformation.get(SessionManager.KEY_PHONENUMBER));
         }
         else {
             loadOrders(getIntent().getStringExtra("userPhone"));
         }
+        //endregion
     }
+    //endregion
 
+    //region Function
     private void loadOrders(String phone) {
 
         FirebaseRecyclerOptions<Request> options = new FirebaseRecyclerOptions
@@ -98,14 +106,12 @@ public class OrderStatus extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    private String convertCodeToStatus(String status){
-        if (status.equals("0"))
-            return "Placed";
-        else if(status.equals("1"))
-            return "On my way";
-        else
-            return "Shipped";
+    @Override
+    protected void onStop() {
+        super.onStop();
+        adapter.stopListening();
     }
 
+    //endregion
 
 }

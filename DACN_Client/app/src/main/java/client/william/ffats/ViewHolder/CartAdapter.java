@@ -1,26 +1,25 @@
 package client.william.ffats.ViewHolder;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.media.Image;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.amulyakhare.textdrawable.TextDrawable;
+import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import client.william.ffats.Cart;
 import client.william.ffats.Common.Common;
+import client.william.ffats.Database.Database;
 import client.william.ffats.Interface.ItemClickListener;
 import client.william.ffats.Model.Order;
 import client.william.ffats.R;
@@ -30,7 +29,7 @@ class CartViewHolder extends RecyclerView.ViewHolder implements
         View.OnCreateContextMenuListener{
 
     public TextView txtCartName, txtPrice;
-    public ImageView imgCartCount;
+    public ElegantNumberButton btnQuantity;
 
     private ItemClickListener itemClickListener;
 
@@ -42,7 +41,7 @@ class CartViewHolder extends RecyclerView.ViewHolder implements
         super(itemView);
         txtCartName = itemView.findViewById(R.id.cart_item_name);
         txtPrice = itemView.findViewById(R.id.cart_item_Price);
-        imgCartCount = itemView.findViewById(R.id.cart_item_count);
+        btnQuantity = itemView.findViewById(R.id.btn_quantity);
 
         itemView.setOnCreateContextMenuListener(this);
     }
@@ -62,28 +61,48 @@ class CartViewHolder extends RecyclerView.ViewHolder implements
 public class CartAdapter extends RecyclerView.Adapter<CartViewHolder>{
 
     private List<Order> listData = new ArrayList<>();
-    private Context context;
+    private Cart cart;
 
-    public CartAdapter(List<Order> listData, Context context) {
+    public CartAdapter(List<Order> listData, Cart cart) {
         this.listData = listData;
-        this.context = context;
+        this.cart = cart;
     }
 
     @NonNull
     @Override
     public CartViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(context);
+        LayoutInflater inflater = LayoutInflater.from(cart);
         View view = inflater.inflate(R.layout.cart_layout,parent,false);
         return new CartViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
-        TextDrawable drawable = TextDrawable.builder()
-                .buildRound(""+listData.get(position).getQuantity(), Color.RED);
-        holder.imgCartCount.setImageDrawable(drawable);
+//        TextDrawable drawable = TextDrawable.builder()
+//                .buildRound(""+listData.get(position).getQuantity(), Color.RED);
+//        holder.imgCartCount.setImageDrawable(drawable);
 
-        Locale locale = new Locale("en","US");
+        holder.btnQuantity.setNumber(listData.get(position).getQuantity());
+        holder.btnQuantity.setOnValueChangeListener(new ElegantNumberButton.OnValueChangeListener() {
+            @Override
+            public void onValueChange(ElegantNumberButton view, int oldValue, int newValue) {
+                Order order = listData.get(position);
+                order.setQuantity(String.valueOf(newValue));
+                new Database(cart).updateCart(order);
+
+                //calculating total price
+                int total = 0;
+                List<Order> orders = new Database(cart).getCart();
+                for (Order item : orders)
+                    total += (Integer.parseInt(order.getPrice())) * (Integer.parseInt(order.getQuantity()));
+                Locale locale = new Locale("vn", "VN");
+                NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
+
+                cart.txtTotalPrice.setText(fmt.format(total));
+            }
+        });
+
+        Locale locale = new Locale("vn","VN");
         NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
         int price = (Integer
                 .parseInt(listData

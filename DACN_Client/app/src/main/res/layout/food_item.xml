@@ -3,38 +3,51 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
-    app:cardElevation="4dp"
+    android:layout_height="400dp"
+    app:cardElevation="10dp"
+    android:layout_margin="10dp"
+    app:cardCornerRadius="3dp"
     android:layout_marginBottom="8dp">
 
-    <RelativeLayout
+    <LinearLayout
+        android:layout_margin="10dp"
+        android:orientation="vertical"
+        android:weightSum="5"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <ImageView
+            android:layout_margin="10dp"
             android:id="@+id/food_image"
-            android:scaleType="centerCrop"
-            android:src="@drawable/wait"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="0dp"
+            android:layout_weight="4"
+            android:scaleType="centerCrop"
+            android:src="@drawable/wait" />
 
         <LinearLayout
             android:weightSum="10"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:background="@color/overlayBackground">
+            android:gravity="center_vertical"
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
             <TextView
                 android:id="@+id/food_name"
                 android:textColor="@color/black"
                 android:text="Tên món"
                 android:textSize="20sp"
-                android:gravity="center"
-                android:layout_weight="9"
+                android:layout_weight="8"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"/>
+
+            <ImageView
+                android:id="@+id/fav_share"
+                android:src="@drawable/link"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
 
             <ImageView
                 android:id="@+id/fav_image"
@@ -45,8 +58,29 @@
 
         </LinearLayout>
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/food_price"
+                android:textColor="@color/black"
+                android:text="500"
+                android:textSize="20sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <ImageView
+                android:id="@+id/btn_quick_cart"
+                android:src="@drawable/shopping_basket"
+                android:layout_alignParentRight="true"
+                android:layout_centerInParent="true"
+                android:layout_width="50dp"
+                android:layout_height="50dp"/>
+
+        </RelativeLayout>
 
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </androidx.cardview.widget.CardView>

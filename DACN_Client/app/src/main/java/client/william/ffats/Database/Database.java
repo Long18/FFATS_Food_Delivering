@@ -1,5 +1,6 @@
 package client.william.ffats.Database;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,11 +22,12 @@ public class Database extends SQLiteAssetHelper {
         super(context, DB_NAME, null, DB_VER);
     }
 
+    @SuppressLint("Range")
     public List<Order> getCart(){
         SQLiteDatabase db = getReadableDatabase();
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 
-        String[] sqlSelect = {"ProductName","ProductId","Quantity","Price","Discount"};
+        String[] sqlSelect = {"ID","ProductName","ProductId","Quantity","Price","Discount"};
         String sqlTable = "OrderDetail";
 
         qb.setTables(sqlTable);
@@ -35,7 +37,9 @@ public class Database extends SQLiteAssetHelper {
         if (cursor.moveToFirst())
         {
             do {
-                result.add(new Order(cursor.getString(cursor.getColumnIndex("ProductId")),
+                result.add(new Order(
+                        cursor.getInt(cursor.getColumnIndex("ID")),
+                        cursor.getString(cursor.getColumnIndex("ProductId")),
                         cursor.getString(cursor.getColumnIndex("ProductName")),
                         cursor.getString(cursor.getColumnIndex("Quantity")),
                         cursor.getString(cursor.getColumnIndex("Price")),
@@ -80,7 +84,7 @@ public class Database extends SQLiteAssetHelper {
 
     public void updateCart(Order order) {
         SQLiteDatabase db = getReadableDatabase();
-        String query = String.format("UPDATE OrderDetail SET Quantity= %s WHERE ID = %d",order.getQuantity(),order.getProductId());
+        String query = String.format("UPDATE OrderDetail SET Quantity= %s WHERE ID = %d",order.getQuantity(),order.getID() );
         db.execSQL(query);
     }
 

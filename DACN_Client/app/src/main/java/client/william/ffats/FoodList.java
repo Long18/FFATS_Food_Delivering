@@ -2,11 +2,15 @@ package client.william.ffats;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -15,6 +19,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.facebook.CallbackManager;
+import com.facebook.share.model.SharePhoto;
+import com.facebook.share.model.SharePhotoContent;
+import com.facebook.share.widget.ShareDialog;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.firebase.database.DataSnapshot;
@@ -25,16 +33,16 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.mancj.materialsearchbar.MaterialSearchBar;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
 import client.william.ffats.Interface.ItemClickListener;
-import client.william.ffats.Model.Category;
 import client.william.ffats.Model.Food;
+import client.william.ffats.Model.Order;
 import client.william.ffats.ViewHolder.FoodViewHolder;
 
 public class FoodList extends AppCompatActivity {
@@ -56,6 +64,38 @@ public class FoodList extends AppCompatActivity {
     List<String> suggestList = new ArrayList<>();
     MaterialSearchBar searchBar;
 
+    //Facebook Share
+    CallbackManager callbackManager;
+    ShareDialog shareDialog;
+
+    //Get image form bitmap to fb
+    Target facabookShare = new Target() {
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            SharePhoto photo = new SharePhoto.Builder()
+                    .setBitmap(bitmap)
+                    .build();
+            if (ShareDialog.canShow(SharePhotoContent.class)){
+                SharePhotoContent content = new SharePhotoContent.Builder()
+                        .addPhoto(photo)
+                        .build();
+                shareDialog.show(FoodList.this,content);
+            }
+        }
+
+        @Override
+        public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+        }
+    };
+
+    SwipeRefreshLayout swipeRefreshLayout;
+
 
     //region Activity Function
     @Override
@@ -67,6 +107,7 @@ public class FoodList extends AppCompatActivity {
 
     }
 
+    @SuppressLint("ResourceAsColor")
     private void viewConstructor() {
         //DB
         database = FirebaseDatabase.getInstance();
@@ -84,6 +125,10 @@ public class FoodList extends AppCompatActivity {
         loadSuggest();
         searchBar.setLastSuggestions(suggestList);
         searchBar.setCardViewElevation(10);
+
+        //Facebook
+        callbackManager = CallbackManager.Factory.create();
+        shareDialog = new ShareDialog(this);
 
         searchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
             @Override
@@ -128,7 +173,47 @@ public class FoodList extends AppCompatActivity {
             }
         });
 
-        //Get Intent
+        //Swipe to reload page
+        swipeRefreshLayout = findViewById(R.id.swipe_layout);
+        swipeRefreshLayout.setColorSchemeColors(R.color.colorPrimary,
+                android.R.color.holo_purple,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                //region Get Intent
+                if (getIntent() != null)
+                    categoryId = getIntent().getStringExtra("CategoryId");
+                if (!categoryId.isEmpty() && categoryId != null){
+                    if (Common.isConnectedToInternet(getBaseContext())){
+                        loadListFood(categoryId);
+                    }else{
+                        Toast.makeText(FoodList.this, "Please check your connection", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+                //endregion
+            }
+        });
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                //region Get Intent
+                if (getIntent() != null)
+                    categoryId = getIntent().getStringExtra("CategoryId");
+                if (!categoryId.isEmpty() && categoryId != null){
+                    if (Common.isConnectedToInternet(getBaseContext())){
+                        loadListFood(categoryId);
+                    }else{
+                        Toast.makeText(FoodList.this, "Please check your connection", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+                //endregion
+            }
+        });
+        //region Get Intent
         if (getIntent() != null)
             categoryId = getIntent().getStringExtra("CategoryId");
         if (!categoryId.isEmpty() && categoryId != null){
@@ -139,6 +224,7 @@ public class FoodList extends AppCompatActivity {
                 return;
             }
         }
+        //endregion
     }
     //endregion
 
@@ -179,7 +265,7 @@ public class FoodList extends AppCompatActivity {
             }
         };
         searchAdapter.startListening();
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new GridLayoutManager(FoodList.this,2));
         recyclerView.setAdapter(searchAdapter);
     }
 
@@ -211,12 +297,40 @@ public class FoodList extends AppCompatActivity {
 
         adapter = new FirebaseRecyclerAdapter<Food, FoodViewHolder>(foodOptions) {
             @Override
-            protected void onBindViewHolder(@NonNull FoodViewHolder viewHolder,final int position,
+            protected void onBindViewHolder(@NonNull FoodViewHolder viewHolder, @SuppressLint("RecyclerView") final int position,
                                             @NonNull final Food model) {
 
                 viewHolder.txtFoodName.setText(model.getName());
+                viewHolder.txtFoodPrice.setText(String.format("%s Đ",model.getPrice().toString()));
+
                 Picasso.get().load(model.getImage())
                         .into(viewHolder.imageFood);
+
+                viewHolder.btnQuickCart.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        new Database(getBaseContext()).addToCart(new Order(
+                                adapter.getRef(position).getKey(),
+                                model.getName(),
+                                "1",
+                                model.getPrice(),
+                                model.getDiscount()
+                        ));
+
+                        Toast.makeText(FoodList.this, "Added to Cart", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                //Click share
+                viewHolder.fav_share.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Picasso.get().load(model.getImage())
+                                .into(facabookShare);
+
+                        Toast.makeText(FoodList.this, "okok", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
                 //Add favorites
                 if (localDB.isFavorites(adapter.getRef(position).getKey())){
@@ -259,8 +373,30 @@ public class FoodList extends AppCompatActivity {
             }
         };
         adapter.startListening();
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new GridLayoutManager(FoodList.this,2));
         recyclerView.setAdapter(adapter);
+        swipeRefreshLayout.setRefreshing(false);
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        adapter.startListening();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //adapter.stopListening();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (adapter != null){
+            adapter.startListening();
+        }
+    }
+
     //endregion
 }

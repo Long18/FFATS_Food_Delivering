@@ -59,7 +59,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0'
     implementation 'androidx.navigation:navigation-fragment:2.3.5'
     implementation 'androidx.navigation:navigation-ui:2.3.5'
-    implementation 'com.google.firebase:firebase-firestore:24.0.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.4-alpha03'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0-alpha03'
@@ -75,8 +74,18 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:20.0.2'
     implementation 'com.google.firebase:firebase-auth:21.0.1'
     implementation 'com.firebaseui:firebase-ui-database:8.0.0'
+    implementation 'com.google.firebase:firebase-firestore:24.0.0'
+    implementation 'com.google.firebase:firebase-messaging:23.0.0'
+    implementation 'com.google.firebase:firebase-inappmessaging-display:20.1.1'
+
+    //Facebook
+
+    implementation 'com.facebook.android:facebook-share:latest.release'
 
     //Etc
+    implementation 'com.github.andremion:counterfab:1.2.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.stepstone.apprating:app-rating:2.3.1'
     implementation 'com.hbb20:ccp:2.3.1'
     implementation 'com.chaos.view:pinview:1.4.4'

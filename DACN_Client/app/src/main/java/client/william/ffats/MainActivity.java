@@ -1,7 +1,10 @@
 package client.william.ffats;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 
 import androidx.annotation.NonNull;
@@ -10,18 +13,24 @@ import androidx.core.content.ContextCompat;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.FacebookSdk;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import client.william.ffats.Account.Sign_In;
 import client.william.ffats.Account.Sign_Up;
@@ -65,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
         insertData();
         viewConstructor();
 
+        printKeyHash(MainActivity.this);
+
     }
 
     private void insertData() {
@@ -87,6 +98,8 @@ public class MainActivity extends AppCompatActivity {
         rmbPassword = Paper.book().read(Common.PWD_KEY);
         rmbCodeCountry = Paper.book().read(Common.CCP_KEY);
 
+        FacebookSdk.sdkInitialize(getApplicationContext());
+
         SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
         if(sessionManager.checkUserLogin()){
             if (rmbNumberPhone != null && rmbPassword != null) {
@@ -98,6 +111,42 @@ public class MainActivity extends AppCompatActivity {
 
     }
     //endregion
+
+
+    //region Get KeyHash
+    public static String printKeyHash(Activity context) {
+        PackageInfo packageInfo;
+        String key = null;
+        try {
+            //getting application package name, as defined in manifest
+            String packageName = context.getApplicationContext().getPackageName();
+
+            //Retriving package info
+            packageInfo = context.getPackageManager().getPackageInfo(packageName,
+                    PackageManager.GET_SIGNATURES);
+
+            Log.e("Package Name=", context.getApplicationContext().getPackageName());
+
+            for (android.content.pm.Signature signature : packageInfo.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                key = new String(Base64.encode(md.digest(), 0));
+
+                // String key = new String(Base64.encodeBytes(md.digest()));
+                Log.e("Key Hash=", key);
+            }
+        } catch (PackageManager.NameNotFoundException e1) {
+            Log.e("Name not found", e1.toString());
+        } catch (NoSuchAlgorithmException e) {
+            Log.e("No such an algorithm", e.toString());
+        } catch (Exception e) {
+            Log.e("Exception", e.toString());
+        }
+
+        return key;
+    }
+    //endregion
+
 
     //region Function
     private void login(String phone, String pwd,String cpp) {

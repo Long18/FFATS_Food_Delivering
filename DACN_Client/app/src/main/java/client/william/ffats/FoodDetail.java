@@ -10,6 +10,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.andremion.counterfab.CounterFab;
 import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -38,7 +39,8 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
     TextView food_name,food_price,food_description;
     ImageView food_image;
     CollapsingToolbarLayout collapsingToolbarLayout;
-    FloatingActionButton btnCart,btnRate;
+    FloatingActionButton btnRate;
+    CounterFab btnCart;
     ElegantNumberButton numberButton;
     RatingBar ratingBar;
 
@@ -122,6 +124,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
     }
     //endregion
 
+    //region Function
     private void getDetailFood(String foodId) {
         foods.child(foodId).addValueEventListener(new ValueEventListener() {
             @Override
@@ -133,7 +136,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
                         .into(food_image);
 
                 collapsingToolbarLayout.setTitle(currentFood.getName());
-                food_price.setText(currentFood.getPrice());
+                food_price.setText(String.format("%s Đ",currentFood.getPrice().toString()));
                 food_name.setText(currentFood.getName());
                 food_description.setText(currentFood.getDescription());
             }
@@ -144,6 +147,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
             }
         });
     }
+
 
     private void showRatingDialog() {
         new AppRatingDialog.Builder()
@@ -167,12 +171,10 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
 
     @Override
     public void onNegativeButtonClicked() {
-
     }
 
     @Override
     public void onNeutralButtonClicked() {
-
     }
 
     @Override
@@ -223,6 +225,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
                 if (count != 0 ){
                     float average = sum/count;
                     ratingBar.setRating(average);
+
                 }
             }
 
@@ -232,4 +235,12 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
             }
         });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        btnCart.setCount(new Database(FoodDetail.this).getCountCart());
+    }
+
+    //endregion
 }

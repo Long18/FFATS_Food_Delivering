@@ -29,6 +29,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceIdReceiver;
+import com.google.firebase.iid.internal.FirebaseInstanceIdInternal;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -51,11 +54,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 import server.william.ffats.Common.Common;
+import server.william.ffats.Database.SessionManager;
 import server.william.ffats.Interface.ItemClickListener;
 import server.william.ffats.Model.Category;
+import server.william.ffats.Model.Token;
 import server.william.ffats.Service.ListenOrder;
 import server.william.ffats.ViewHolder.MenuViewHolder;
 import server.william.ffats.databinding.ActivityHomeBinding;
@@ -123,7 +129,10 @@ public class Home extends AppCompatActivity
         //set name for user
         View headerView = navigationView.getHeaderView(0);
         TextFullName = headerView.findViewById(R.id.txtFullName);
-        TextFullName.setText(Common.currentUser.getName());
+
+        SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        HashMap<String, String> userInformation = sessionManager.getInfomationUser();
+        TextFullName.setText(userInformation.get(SessionManager.KEY_FULLNAME));
 
         // Load menu
         recycler_menu = findViewById(R.id.recycler_menu);
@@ -137,9 +146,24 @@ public class Home extends AppCompatActivity
             Toast.makeText(Home.this, "Please Check Internet Connection", Toast.LENGTH_LONG).show();
             return;
         }
+
         // register the service
         Intent service = new Intent(Home.this, ListenOrder.class);
         startService(service);
+
+        String token = FirebaseMessaging.getInstance().getToken().toString();
+        updateToken(token);
+    }
+
+    private void updateToken(String token) {
+
+        SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        HashMap<String, String> userInformation = sessionManager.getInfomationUser();
+
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference tokens = db.getReference("Tokens");
+        Token data = new Token(token,true);
+        tokens.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).setValue(data);
     }
 
     private void showDialog() {

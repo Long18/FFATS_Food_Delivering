@@ -1,12 +1,13 @@
 package client.william.ffats;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Notification;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,9 +36,16 @@ import java.util.Locale;
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
 import client.william.ffats.Database.SessionManager;
+import client.william.ffats.Model.Notification;
 import client.william.ffats.Model.Order;
 import client.william.ffats.Model.Request;
+import client.william.ffats.Model.Response;
+import client.william.ffats.Model.Sender;
+import client.william.ffats.Model.Token;
+import client.william.ffats.Remote.APIService;
 import client.william.ffats.ViewHolder.CartAdapter;
+import retrofit2.Call;
+import retrofit2.Callback;
 
 public class Cart extends AppCompatActivity {
 
@@ -47,11 +55,13 @@ public class Cart extends AppCompatActivity {
     FirebaseDatabase database;
     DatabaseReference requests;
 
-    TextView txtTotalPrice;
+    public TextView txtTotalPrice;
     Button btnPlace;
 
     List<Order> cart = new ArrayList<>();
     CartAdapter adapter;
+
+    APIService mService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,12 +71,14 @@ public class Cart extends AppCompatActivity {
         // Firebase
         database = FirebaseDatabase.getInstance();
         requests = database.getReference("Requests");
+        mService = Common.getGCMService();
 
         //Init
         recyclerView = findViewById(R.id.listCart);
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
+
 
         txtTotalPrice = findViewById(R.id.total);
         btnPlace = findViewById(R.id.btnPlaceOrder);
@@ -124,10 +136,15 @@ public class Cart extends AppCompatActivity {
                 );
                 // Submit to firebase
                 //we will using System.Current to key
-                requests.child(String.valueOf(System.currentTimeMillis())).setValue(request);
+                String orderNumber = String.valueOf(System.currentTimeMillis());
+                requests.child(orderNumber).setValue(request);
                 //deleting cart
                 new Database(getBaseContext()).cleanCart();
+
+                sendNotification(orderNumber);
+                Intent home = new Intent(Cart.this, Home.class);
                 Toast.makeText(Cart.this, "Thank You! Order Place", Toast.LENGTH_SHORT).show();
+                startActivity(home);
                 finish();
             }
         });
@@ -141,6 +158,50 @@ public class Cart extends AppCompatActivity {
 
     }
 
+    private void sendNotification(String orderNumber) {
+        DatabaseReference tokens = FirebaseDatabase.getInstance().getReference("Tokens");
+        Query data = tokens.orderByChild("isServerToken").equalTo(true);
+        data.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot postSnapShop:snapshot.getChildren()){
+                    Token serverToken = postSnapShop.getValue(Token.class);
+
+                    //Create raw payload
+                    Notification notification = new Notification("William"
+                            ,"You have new order " +orderNumber);
+                    Sender content = new Sender(serverToken.getToken(),notification);
+
+                    mService.sendNotification(content)
+                            .enqueue(new Callback<Response>() {
+                                @Override
+                                public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
+                                    if (response.body().success == 1){
+                                        Toast.makeText(Cart.this, "Thank You! Order Place", Toast.LENGTH_SHORT).show();
+                                        finish();
+                                    }
+                                    else
+                                    {
+                                        Toast.makeText(Cart.this, "Failed", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<Response> call, Throwable t) {
+                                    Log.e("Error",t.getMessage());
+                                }
+                            });
+
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
 
     private void loadListFood() {
         cart = new Database(this).getCart();
@@ -152,7 +213,7 @@ public class Cart extends AppCompatActivity {
         int total = 0;
         for (Order order : cart)
             total += (Integer.parseInt(order.getPrice())) * (Integer.parseInt(order.getQuantity()));
-        Locale locale = new Locale("en", "US");
+        Locale locale = new Locale("vn", "VN");
         NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
 
         txtTotalPrice.setText(fmt.format(total));

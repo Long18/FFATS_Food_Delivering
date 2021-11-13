@@ -48,6 +48,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import server.william.ffats.Common.Common;
 import server.william.ffats.Common.DirectionJSONParser;
+import server.william.ffats.Database.SessionManager;
 import server.william.ffats.Remote.IGeoCoordinates;
 import server.william.ffats.databinding.ActivityTrackingOrderBinding;
 
@@ -74,13 +75,25 @@ public class TrackingOrder extends FragmentActivity implements
 
     private IGeoCoordinates mService;
 
+    SessionManager sessionManager;
+    HashMap<String, String> userInformation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracking_order);
 
+        sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        userInformation = sessionManager.getInfomationUser();
+
 //        binding = ActivityTrackingOrderBinding.inflate(getLayoutInflater());
 //        setContentView(binding.getRoot());
+
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         mService = Common.getGeoCodeService();
 
@@ -100,10 +113,6 @@ public class TrackingOrder extends FragmentActivity implements
 
         displayLocation();
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
     }
 
     private void displayLocation() {
@@ -131,7 +140,7 @@ public class TrackingOrder extends FragmentActivity implements
                                 mMap.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
 
                                 //Add Marker for Order and draw route
-                                drawRoute(yourLocation, Common.currentRequest.getAddress());
+                                drawRoute(yourLocation,Common.currentRequest.getAddress());
                             }else {
                                 Toast.makeText(TrackingOrder.this, "Couldn't get the location", Toast.LENGTH_SHORT).show();
                             }
@@ -166,7 +175,7 @@ public class TrackingOrder extends FragmentActivity implements
                     bitmap = Common.scaleBitmap(bitmap, 70, 70);
 
                     MarkerOptions marker = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-                            .title("Order of " + Common.currentRequest.getPhone())
+                            .title("Order of " +  userInformation.get(SessionManager.KEY_FULLNAME))
                             .position(orderLocation);
                     mMap.addMarker(marker);
 
@@ -297,11 +306,7 @@ public class TrackingOrder extends FragmentActivity implements
 
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-
-    }
+    public void onMapReady(GoogleMap googleMap) {mMap = googleMap;}
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
@@ -334,9 +339,7 @@ public class TrackingOrder extends FragmentActivity implements
 
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {}
 
     @Override
     public void onLocationChanged(@NonNull Location location) {

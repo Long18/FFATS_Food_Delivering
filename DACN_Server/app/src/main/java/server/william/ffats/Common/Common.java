@@ -10,6 +10,8 @@ import android.net.NetworkInfo;
 
 import server.william.ffats.Model.Request;
 import server.william.ffats.Model.User;
+import server.william.ffats.Remote.APIService;
+import server.william.ffats.Remote.FCMRetrofitClient;
 import server.william.ffats.Remote.IGeoCoordinates;
 import server.william.ffats.Remote.RetrofitClient;
 
@@ -24,6 +26,12 @@ public class Common {
     public static final int CHOOSE_IMAGE_REQUEST = 18;
 
     public static final String baseUrl = "https://maps.googleapis.com";
+
+    private static final String DCM_URL = "https://fcm.googleapis.com/";
+
+    public static APIService getGCMService(){
+        return FCMRetrofitClient.getClient(DCM_URL).create(APIService.class);
+    }
 
 
     public static String convertCodeToStatus(String status) {

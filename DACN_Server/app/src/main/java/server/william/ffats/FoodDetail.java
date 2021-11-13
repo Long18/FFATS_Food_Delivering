@@ -17,6 +17,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import server.william.ffats.Database.Database;
 import server.william.ffats.Model.Food;
@@ -66,7 +67,7 @@ public class FoodDetail extends AppCompatActivity {
         food_name = findViewById(R.id.food_name);
         food_price = findViewById(R.id.food_price);
         food_description = findViewById(R.id.food_description);
-        food_image = findViewById(R.id.food_image);
+        food_image = findViewById(R.id.img_food);
 
         collapsingToolbarLayout = findViewById(R.id.collapsing);
         //collapsingToolbarLayout.setExpandedTitleTextAppearance(R.style.ExpandedAppbar);
@@ -84,10 +85,12 @@ public class FoodDetail extends AppCompatActivity {
         foods.child(foodId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+
                 currentFood = snapshot.getValue(Food.class);
 
-                //Picasso.get().load(currentFood.getImage())
-                //        .into(food_image);
+                Picasso.get().load(currentFood.getImage())
+                        .into(food_image);
+
                 collapsingToolbarLayout.setTitle(currentFood.getName());
                 food_price.setText(currentFood.getPrice());
                 food_name.setText(currentFood.getName());

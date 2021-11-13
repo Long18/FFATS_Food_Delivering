@@ -1,11 +1,8 @@
 package client.william.ffats.Model;
 
 public class Order {
-    private String ProductId;
-    private String ProductName;
-    private String Quantity;
-    private String Price;
-    private String Discount;
+    private String ProductId,ProductName,Quantity,Price,Discount;
+    private int ID;
 
     public Order() {
     }
@@ -16,6 +13,24 @@ public class Order {
         Quantity = quantity;
         Price = price;
         Discount = discount;
+    }
+
+
+    public Order(int id, String productId, String productName, String quantity, String price, String discount) {
+        ProductId = productId;
+        ProductName = productName;
+        Quantity = quantity;
+        Price = price;
+        Discount = discount;
+        this.ID = ID;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public String getProductId() {

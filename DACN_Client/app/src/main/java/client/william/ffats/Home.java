@@ -1,5 +1,6 @@
 package client.william.ffats;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,16 +8,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import android.view.animation.LayoutAnimationController;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.andremion.counterfab.CounterFab;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.iid.FirebaseInstanceIdReceiver;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingService;
 import com.squareup.picasso.Picasso;
 
 import androidx.annotation.NonNull;
@@ -25,17 +31,19 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.util.HashMap;
 
 import client.william.ffats.Common.Common;
+import client.william.ffats.Database.Database;
 import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
 import client.william.ffats.Model.Category;
-import client.william.ffats.Model.User;
-import client.william.ffats.Service.ListenOrder;
+import client.william.ffats.Model.Token;
 import client.william.ffats.ViewHolder.MenuViewHolder;
 import io.paperdb.Paper;
 
@@ -49,6 +57,10 @@ public class Home extends AppCompatActivity
     RecyclerView recycler_menu;
     RecyclerView.LayoutManager linearLayoutManager;
     FirebaseRecyclerAdapter<Category, MenuViewHolder> adapter;
+
+    SwipeRefreshLayout swipeRefreshLayout;
+    CounterFab fab;
+
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -72,6 +84,8 @@ public class Home extends AppCompatActivity
         viewConstructor();
 
     }
+
+    @SuppressLint("ResourceAsColor")
     private void viewConstructor() {
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Menu");
@@ -85,8 +99,9 @@ public class Home extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
+        fab = findViewById(R.id.fab);
         fab.setOnClickListener(onClickListener);
+        fab.setCount(new Database(Home.this).getCountCart());
 
 
         //set name for user
@@ -100,22 +115,54 @@ public class Home extends AppCompatActivity
 
         // Load menu
         recycler_menu = findViewById(R.id.recycler_menu);
-        recycler_menu.setHasFixedSize(true);
-        linearLayoutManager = new LinearLayoutManager(this);
-        recycler_menu.setLayoutManager(linearLayoutManager);
+        //recycler_menu.setHasFixedSize(true);
+        //linearLayoutManager = new LinearLayoutManager(this);
+        //recycler_menu.setLayoutManager(linearLayoutManager);
+        recycler_menu.setLayoutManager(new GridLayoutManager(Home.this,2));
+        LayoutAnimationController controller = AnimationUtils.loadLayoutAnimation(recycler_menu.getContext(),R.anim.anim_layout_fall_down);
+        recycler_menu.setLayoutAnimation(controller);
 
-        //Check Internet
+        //Swipe to reload page
+        swipeRefreshLayout = findViewById(R.id.swipe_layout);
+        swipeRefreshLayout.setColorSchemeColors(R.color.colorPrimary,
+                android.R.color.holo_purple,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (Common.isConnectedToInternet(getBaseContext()))
+                    loadMenu();
+                else {
+                    Toast.makeText(Home.this, "Please Check Internet Connection", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        });
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                if (Common.isConnectedToInternet(getBaseContext()))
+                    loadMenu();
+                else {
+                    Toast.makeText(Home.this, "Please Check Internet Connection", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        });
 
+        //region Check Internet
         if (Common.isConnectedToInternet(getBaseContext()))
             loadMenu();
         else {
             Toast.makeText(Home.this, "Please Check Internet Connection", Toast.LENGTH_LONG).show();
             return;
         }
+        //endregion
 
-        // register the service
-        Intent service = new Intent(Home.this, ListenOrder.class);
-        startService(service);
+        String token = FirebaseMessaging.getInstance().getToken().toString();
+
+        updateToken(token);
 
     }
 
@@ -124,12 +171,6 @@ public class Home extends AppCompatActivity
         category = database.getReference("categories");
         category.keepSynced(true);
 
-        Paper.init(this);
-    }
-    //endregion
-
-    //region Function
-    private void loadMenu() {
         FirebaseRecyclerOptions<Category> options =
                 new FirebaseRecyclerOptions.Builder<Category>()
                         .setQuery(category, Category.class)
@@ -137,14 +178,14 @@ public class Home extends AppCompatActivity
 
         adapter = new FirebaseRecyclerAdapter<Category, MenuViewHolder>(options) {
             @Override
-            protected void onBindViewHolder(@NonNull final MenuViewHolder menuViewHolder, int i,
-                                            @NonNull final Category category) {
+            protected void onBindViewHolder(@NonNull final MenuViewHolder menuViewHolder, int position,
+                                            @NonNull final Category model) {
 
+                //set Image default
+                Picasso.get().load(model.getImage()).placeholder(R.drawable.circle_dialog).fit().into(menuViewHolder.imageView);
 
-                Picasso.get().load(category.getImage()).placeholder(R.drawable.circle_dialog).fit().into(menuViewHolder.imageView);
-
-                menuViewHolder.txtMenuName.setText(category.getName());
-//                final Category clickItem = category;
+                menuViewHolder.txtMenuName.setText(model.getName());
+                //final Category clickItem = category;
                 menuViewHolder.setItemClickListener(new ItemClickListener() {
                     @Override
                     public void onClick(View view, int position, boolean isLongClick) {
@@ -165,9 +206,37 @@ public class Home extends AppCompatActivity
                 return new MenuViewHolder(view);
             }
         };
+
+        Paper.init(this);
+    }
+    //endregion
+
+    //region Function
+    private void loadMenu() {
+
         adapter.startListening();
         adapter.notifyDataSetChanged();
         recycler_menu.setAdapter(adapter);
+        swipeRefreshLayout.setRefreshing(false);
+
+        //Anim
+        recycler_menu.getAdapter().notifyDataSetChanged();
+        recycler_menu.scheduleLayoutAnimation();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //adapter.stopListening();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fab.setCount(new Database(Home.this).getCountCart());
+        if (adapter != null){
+            adapter.startListening();
+        }
     }
 
     @Override
@@ -184,6 +253,12 @@ public class Home extends AppCompatActivity
             super.onBackPressed();
         }
 
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        fab.setCount(new Database(Home.this).getCountCart());
     }
 
     @Override
@@ -237,6 +312,17 @@ public class Home extends AppCompatActivity
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void updateToken(String token){
+
+        SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        HashMap<String, String> userInformation = sessionManager.getInfomationUser();
+
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference tokens = db.getReference("Tokens");
+        Token data = new Token(token,false);
+        tokens.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).setValue(data);
     }
 
     //endregion

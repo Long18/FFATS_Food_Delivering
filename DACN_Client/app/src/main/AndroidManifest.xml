@@ -28,6 +28,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FFATS.NoActionBar"
         tools:replace="android:theme">
+
+        <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+
+
         <activity
             android:name=".Account.Reset_Password"
             android:exported="false" />
@@ -37,11 +41,6 @@
         <activity
             android:name=".Account.Verify_OTP"
             android:exported="false" />
-
-        <service
-            android:name=".Service.ListenOrder"
-            android:enabled="true"
-            android:exported="true" />
 
         <activity
             android:name=".OrderStatus"
@@ -76,6 +75,24 @@
             </intent-filter>
         </activity>
 
+        <service android:name=".Service.FirebaseMessaging"
+            android:stopWithTask="false"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service android:name=".Service.FirebaseIdService"
+            android:stopWithTask="false"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
         <service android:name="com.google.firebase.components.ComponentDiscoveryService">
             <meta-data
                 android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
@@ -93,6 +110,15 @@
                 android:name="com.google.firebase.components:com.google.firebase.database.DatabaseRegistrar"
                 android:value="com.google.firebase.components.ComponentRegistrar" />
         </service>
+
+        <provider
+            android:authorities="com.facebook.app.FacebookContentProvider435206154792265"
+            android:name="com.facebook.FacebookContentProvider"
+            android:exported="true"/>
+        <provider android:authorities="com.facebook.app.FacebookContentProvider{APP_ID}"
+            android:name="com.facebook.FacebookContentProvider"
+            android:exported="true"/>
+
     </application>
 
 </manifest>
