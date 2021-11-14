@@ -179,6 +179,16 @@
 
             </androidx.cardview.widget.CardView>
 
+            <Button
+                android:id="@+id/btn_ShowComment"
+                android:text="More Comment"
+                android:textColor="@color/white"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:background="@drawable/btn_click"
+                android:shadowColor="@color/neutralsText"/>
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

@@ -44,6 +44,7 @@ import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
 import client.william.ffats.Model.Category;
 import client.william.ffats.Model.Token;
+import client.william.ffats.Remote.LocationResolver;
 import client.william.ffats.ViewHolder.MenuViewHolder;
 import io.paperdb.Paper;
 
@@ -60,6 +61,7 @@ public class Home extends AppCompatActivity
 
     SwipeRefreshLayout swipeRefreshLayout;
     CounterFab fab;
+
 
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -167,6 +169,8 @@ public class Home extends AppCompatActivity
     }
 
     private void insertData() {
+
+
         database = FirebaseDatabase.getInstance();
         category = database.getReference("categories");
         category.keepSynced(true);

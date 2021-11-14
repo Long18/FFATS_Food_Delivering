@@ -500,6 +500,8 @@ public class FoodList extends AppCompatActivity {
                     foodList.child(key).setValue(item);
 
                     Snackbar.make(rootLayout,"New food " +newFood.getName()+"was added.", Snackbar.LENGTH_SHORT).show();
+                }else {
+                    Snackbar.make(rootLayout,"Thêm hình ảnh rồi mới up", Snackbar.LENGTH_SHORT).show();
                 }
             }
         });

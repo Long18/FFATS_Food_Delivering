@@ -36,6 +36,7 @@ import client.william.ffats.Account.Sign_In;
 import client.william.ffats.Account.Sign_Up;
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.SessionManager;
+import client.william.ffats.Remote.LocationResolver;
 import io.paperdb.Paper;
 
 
@@ -48,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
     DatabaseReference table_user;
 
     String rmbNumberPhone, rmbPassword, rmbCodeCountry;
+
+
+    LocationResolver mLocationResolver;
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -79,6 +83,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void insertData() {
+        mLocationResolver = new LocationResolver(this);
+        mLocationResolver.isLocationPermissionEnabled();
+        mLocationResolver.checkPermissionLocation(MainActivity.this);
+
         db = FirebaseDatabase.getInstance();
         table_user = db.getReference("user");
     }

@@ -438,7 +438,9 @@ public class Home extends AppCompatActivity
         foodInCategory.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                snapshot.getRef().removeValue();
+                for (DataSnapshot postSnapShot:snapshot.getChildren()){
+                    postSnapShot.getRef().removeValue();
+                }
             }
 
             @Override

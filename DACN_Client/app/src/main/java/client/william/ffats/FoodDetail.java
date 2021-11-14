@@ -3,8 +3,10 @@ package client.william.ffats;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -12,6 +14,8 @@ import android.widget.Toast;
 
 import com.andremion.counterfab.CounterFab;
 import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
@@ -43,6 +47,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
     CounterFab btnCart;
     ElegantNumberButton numberButton;
     RatingBar ratingBar;
+    Button btnShowComment;
 
     String foodId="";
 
@@ -61,7 +66,8 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
                         currentFood.getName(),
                         numberButton.getNumber(),
                         currentFood.getPrice(),
-                        currentFood.getDiscount()
+                        currentFood.getDiscount(),
+                        currentFood.getImage()
                 ));
 
                 Toast.makeText(FoodDetail.this, "Added to Cart", Toast.LENGTH_SHORT).show();
@@ -70,6 +76,13 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
             //region Button Rate
             if (v.getId() == R.id.btnRate){
                 showRatingDialog();
+            }
+            //endregion
+            //region Show Comment
+            if (v.getId() == R.id.btn_ShowComment){
+                Intent intent = new Intent(FoodDetail.this,Comment.class);
+                intent.putExtra("FoodId",foodId);
+                startActivity(intent);
             }
             //endregion
         }
@@ -94,6 +107,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
         numberButton = findViewById(R.id.number_button);
         btnCart = findViewById(R.id.btnCart);
         btnRate = findViewById(R.id.btnRate);
+        btnShowComment = findViewById(R.id.btn_ShowComment);
         ratingBar = findViewById(R.id.rateBar);
 
         food_name = findViewById(R.id.food_name);
@@ -107,6 +121,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
 
         btnCart.setOnClickListener(onClickListener);
         btnRate.setOnClickListener(onClickListener);
+        btnShowComment.setOnClickListener(onClickListener);
 
         //Get FoodId
         if (getIntent() != null)
@@ -188,8 +203,16 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
                 foodId,
                 String.valueOf(value),
                 comments);
+        ratingDB.push()
+                .setValue(rating)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(FoodDetail.this, "Thanks for submit rating food", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
-        ratingDB.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).addValueEventListener(new ValueEventListener() {
+        /*ratingDB.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).exists()){
@@ -208,7 +231,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
-        });
+        });*/
     }
 
     private void getRatingFood(String foodId) {

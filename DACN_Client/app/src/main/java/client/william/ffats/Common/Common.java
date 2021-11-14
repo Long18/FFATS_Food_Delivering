@@ -6,12 +6,15 @@ import android.net.NetworkInfo;
 
 import client.william.ffats.Model.User;
 import client.william.ffats.Remote.APIService;
+import client.william.ffats.Remote.IGoogleService;
 import client.william.ffats.Remote.RetrofitClient;
 
 public class Common {
     public static User currentUser;
 
     private static final String BASE_URL = "https://fcm.googleapis.com/";
+    private static final String GOOGLE_API_URL = "https://maps.googleapis.com/";
+
 
 
     public static final String DELETE = "Delete";
@@ -19,6 +22,10 @@ public class Common {
     public static final String USER_KEY = "User";
     public static final String PWD_KEY = "Password";
     public static final String CCP_KEY = "CountryCodePicker";
+
+    public static IGoogleService getGoogleMaps(){
+        return RetrofitClient.getClient(GOOGLE_API_URL).create(IGoogleService.class);
+    }
 
     public static APIService getGCMService(){
         return RetrofitClient.getClient(BASE_URL).create(APIService.class);

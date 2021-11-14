@@ -1,16 +1,19 @@
 package client.william.ffats.ViewHolder;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cepheuen.elegantnumberbutton.view.ElegantNumberButton;
+import com.squareup.picasso.Picasso;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ class CartViewHolder extends RecyclerView.ViewHolder implements
 
     public TextView txtCartName, txtPrice;
     public ElegantNumberButton btnQuantity;
+    public ImageView cartImage;
 
     private ItemClickListener itemClickListener;
 
@@ -42,6 +46,7 @@ class CartViewHolder extends RecyclerView.ViewHolder implements
         txtCartName = itemView.findViewById(R.id.cart_item_name);
         txtPrice = itemView.findViewById(R.id.cart_item_Price);
         btnQuantity = itemView.findViewById(R.id.btn_quantity);
+        cartImage = itemView.findViewById(R.id.cartImage);
 
         itemView.setOnCreateContextMenuListener(this);
     }
@@ -77,10 +82,15 @@ public class CartAdapter extends RecyclerView.Adapter<CartViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CartViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull CartViewHolder holder, @SuppressLint("RecyclerView") final int position) {
 //        TextDrawable drawable = TextDrawable.builder()
 //                .buildRound(""+listData.get(position).getQuantity(), Color.RED);
 //        holder.imgCartCount.setImageDrawable(drawable);
+
+        Picasso.get().load(listData.get(position).getImage())
+                .resize(70,70)
+                .centerCrop()
+                .into(holder.cartImage);
 
         holder.btnQuantity.setNumber(listData.get(position).getQuantity());
         holder.btnQuantity.setOnValueChangeListener(new ElegantNumberButton.OnValueChangeListener() {

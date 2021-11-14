@@ -20,7 +20,9 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,11 +33,6 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
@@ -48,6 +45,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.rengwuxian.materialedittext.MaterialEditText;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -66,6 +67,8 @@ import client.william.ffats.Model.Response;
 import client.william.ffats.Model.Sender;
 import client.william.ffats.Model.Token;
 import client.william.ffats.Remote.APIService;
+import client.william.ffats.Remote.IGoogleService;
+import client.william.ffats.Remote.LocationResolver;
 import client.william.ffats.ViewHolder.CartAdapter;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -75,8 +78,6 @@ public class Cart extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-
-
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
 
@@ -85,6 +86,8 @@ public class Cart extends AppCompatActivity implements
 
     public TextView txtTotalPrice;
     Button btnPlace;
+
+    RadioButton rdbToAddress,rdbToHome;
 
     List<Order> cart = new ArrayList<>();
     CartAdapter adapter;
@@ -111,6 +114,10 @@ public class Cart extends AppCompatActivity implements
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 7000;
     private static final int LOCATION_PERMISSION_REQUEST = 7007;
 
+    private LocationResolver mLocationResolver;
+
+    IGoogleService mGoogleMapService;
+
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -126,6 +133,47 @@ public class Cart extends AppCompatActivity implements
         }
     };
 
+
+    CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            //region rdbShiptoAddress
+            if (buttonView.getId() == R.id.rdbHomeAdress){
+                if (isChecked){
+                    mGoogleMapService.getAddressName(String
+                            .format("https://maps.googleapis.com/maps/api/geocode/json?latlng=%f,%f&sensor=false",
+                                    mLastLocation.getLatitude(),
+                                    mLastLocation.getLongitude()))
+                            .enqueue(new Callback<String>() {
+                                @Override
+                                public void onResponse(Call<String> call, retrofit2.Response<String> response) {
+                                    try {
+                                        JSONObject jsonObject = new JSONObject(response.body().toString());
+
+                                        JSONArray resultArray = jsonObject.getJSONArray("results");
+
+                                        JSONObject firstObject = resultArray.getJSONObject(0);
+
+                                        String address =  firstObject.getString("formatted_address");
+                                        places_fragment = (AutocompleteSupportFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_address);
+                                        ((EditText)places_fragment.getView().findViewById(R.id.place_autocomplete_search_input)).setText(address);
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<String> call, Throwable t) {
+                                    Toast.makeText(Cart.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+            }
+            //endregion
+        }
+    };
+
     //region Activity Function
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +182,7 @@ public class Cart extends AppCompatActivity implements
 
         insertData();
         viewConstructor();
+        checkPermissionLocation();
 
     }
 
@@ -150,10 +199,18 @@ public class Cart extends AppCompatActivity implements
 
         btnPlace.setOnClickListener(onClickListener);
 
-        loadListFood();
-        checkPermissionLocation();
-        displayLocation();
+        mLocationResolver = new LocationResolver(this);
+        mGoogleMapService = Common.getGoogleMaps();
 
+
+        mLocationResolver.resolveLocation(this, new LocationResolver.OnLocationResolved() {
+            @Override
+            public void onLocationResolved(Location location) {
+                loadListFood();
+                checkPermissionLocation();
+                displayLocation();
+            }
+        });
     }
 
     private void insertData() {
@@ -189,6 +246,12 @@ public class Cart extends AppCompatActivity implements
         //Auto complete map address
         setupPlaceAutocomplete();
         MaterialEditText edtComment = order_address.findViewById(R.id.edtComment);
+
+        rdbToHome = (RadioButton)order_address.findViewById(R.id.rdbHomeAdress);
+        rdbToAddress = (RadioButton)order_address.findViewById(R.id.rdbShipToAdress);
+
+        rdbToAddress.setOnCheckedChangeListener(onCheckedChangeListener);
+        rdbToHome.setOnCheckedChangeListener(onCheckedChangeListener);
 
         alertDialog.setIcon(R.drawable.shopping_basket);
 
@@ -246,6 +309,7 @@ public class Cart extends AppCompatActivity implements
         //PlaceAutocompleteFragment fragment_address = (PlaceAutocompleteFragment) getFragmentManager().findFragmentById(R.id.fragment_address);
         places_fragment = (AutocompleteSupportFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_address);
         places_fragment.setPlaceFields(placeFields);
+
         //Hide search icon
         //places_fragment.getView().findViewById(R.id.place_autocomplete_search_button).setVisibility(View.GONE);
         //Hint for auto complete
@@ -430,6 +494,10 @@ public class Cart extends AppCompatActivity implements
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+
+        Log.d("Check","onConnected");
         displayLocation();
         startLocationUpdates();
     }
@@ -437,6 +505,7 @@ public class Cart extends AppCompatActivity implements
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        mLocationResolver.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode){
             case LOCATION_PERMISSION_REQUEST:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -459,7 +528,6 @@ public class Cart extends AppCompatActivity implements
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     private void displayLocation() {
@@ -471,6 +539,7 @@ public class Cart extends AppCompatActivity implements
             return;
         }
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
         if (mLastLocation != null){
             Log.d("Your Location:", mLastLocation.getLatitude()+","+mLastLocation.getLongitude());
             Toast.makeText(Cart.this, mLastLocation.getLatitude()+","+mLastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
@@ -497,5 +566,26 @@ public class Cart extends AppCompatActivity implements
         mLastLocation = location;
         displayLocation();
     }
+
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mLocationResolver.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mLocationResolver.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mLocationResolver.onDestroy();
+    }
+
     //endregion
 }
