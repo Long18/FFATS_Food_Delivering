@@ -14,12 +14,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.andremion.counterfab.CounterFab;
+import com.daimajia.slider.library.Animations.DescriptionAnimation;
+import com.daimajia.slider.library.SliderLayout;
+import com.daimajia.slider.library.SliderTypes.BaseSliderView;
+import com.daimajia.slider.library.SliderTypes.TextSliderView;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceIdReceiver;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -37,14 +44,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.util.HashMap;
+import java.util.Random;
 
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
 import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
+import client.william.ffats.Model.Banner;
 import client.william.ffats.Model.Category;
 import client.william.ffats.Model.Token;
 import client.william.ffats.Remote.LocationResolver;
+import client.william.ffats.Service.ListenOrder;
 import client.william.ffats.ViewHolder.MenuViewHolder;
 import io.paperdb.Paper;
 
@@ -54,13 +64,22 @@ public class Home extends AppCompatActivity
 
     FirebaseDatabase database;
     DatabaseReference category;
-    TextView TextFullName;
+    TextView TextFullName,txtSeeMore;
     RecyclerView recycler_menu;
     RecyclerView.LayoutManager linearLayoutManager;
     FirebaseRecyclerAdapter<Category, MenuViewHolder> adapter;
 
     SwipeRefreshLayout swipeRefreshLayout;
     CounterFab fab;
+
+    HashMap<String,String> images_list;
+    SliderLayout mSlider;
+    int maximum = 8000;
+    int minimum = 6000;
+    int randomNum;
+
+    SessionManager sessionManager;
+    HashMap<String, String> userInformation;
 
 
 
@@ -89,6 +108,9 @@ public class Home extends AppCompatActivity
 
     @SuppressLint("ResourceAsColor")
     private void viewConstructor() {
+        sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        userInformation = sessionManager.getInfomationUser();
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Menu");
         setSupportActionBar(toolbar);
@@ -103,15 +125,14 @@ public class Home extends AppCompatActivity
 
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(onClickListener);
-        fab.setCount(new Database(Home.this).getCountCart());
+        fab.setCount(new Database(getBaseContext()).getCountCart(userInformation.get(SessionManager.KEY_PHONENUMBER)));
 
 
         //set name for user
         View headerView = navigationView.getHeaderView(0);
         TextFullName = headerView.findViewById(R.id.txtFullName);
+        txtSeeMore = headerView.findViewById(R.id.txtSeeMore);
 
-        SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
-        HashMap<String, String> userInformation = sessionManager.getInfomationUser();
         TextFullName.setText(userInformation.get(SessionManager.KEY_FULLNAME));
 
 
@@ -164,9 +185,17 @@ public class Home extends AppCompatActivity
 
         String token = FirebaseMessaging.getInstance().getToken().toString();
 
+        Intent intent = new Intent(Home.this, ListenOrder.class);
+        startService(intent);
+
         updateToken(token);
 
+        //Slider
+        loadSlider();
+
     }
+
+
 
     private void insertData() {
 
@@ -216,6 +245,60 @@ public class Home extends AppCompatActivity
     //endregion
 
     //region Function
+    private void loadSlider() {
+        mSlider = findViewById(R.id.slider);
+        images_list = new HashMap<>();
+
+        final DatabaseReference slider = database.getReference("Banner");
+
+        slider.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot postSnapShot:snapshot.getChildren()){
+                    Banner banner = postSnapShot.getValue(Banner.class);
+                    images_list.put(banner.getName()+"@@@"+banner.getId(), banner.getImage());
+                }
+                for (String key:images_list.keySet()){
+                    String[] keySplit = key.split("@@@");
+                    String foodName = keySplit[0];
+                    String foodId = keySplit[1];
+
+                    final TextSliderView textSliderView = new TextSliderView(getBaseContext());
+                    textSliderView.setPicasso(Picasso.get());
+                    textSliderView.description(foodName)
+                            .image(images_list.get(key))
+                            .setScaleType(BaseSliderView.ScaleType.Fit)
+                            .setOnSliderClickListener(new BaseSliderView.OnSliderClickListener() {
+                                @Override
+                                public void onSliderClick(BaseSliderView slider) {
+                                    Intent intent = new Intent(Home.this,FoodDetail.class);
+                                    intent.putExtras(textSliderView.getBundle());
+                                    startActivity(intent);
+                                }
+                            });
+                    textSliderView.bundle(new Bundle());
+                    textSliderView.getBundle().putString("FoodId",foodId);
+                    mSlider.addSlider(textSliderView);
+
+                    slider.removeEventListener(this);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+        mSlider.setPresetTransformer(SliderLayout.Transformer.Background2Foreground);
+        mSlider.setPresetIndicator(SliderLayout.PresetIndicators.Center_Bottom);
+        mSlider.setCustomAnimation(new DescriptionAnimation());
+        Random rn = new Random();
+        int n = maximum - minimum + 1;
+        int i = rn.nextInt() % n;
+        randomNum =  minimum + i;
+        mSlider.setDuration(randomNum);
+    }
+
     private void loadMenu() {
 
         adapter.startListening();
@@ -232,12 +315,13 @@ public class Home extends AppCompatActivity
     protected void onStop() {
         super.onStop();
         //adapter.stopListening();
+        mSlider.stopAutoCycle();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        fab.setCount(new Database(Home.this).getCountCart());
+        fab.setCount(new Database(Home.this).getCountCart(userInformation.get(SessionManager.KEY_PHONENUMBER)));
         if (adapter != null){
             adapter.startListening();
         }
@@ -262,7 +346,7 @@ public class Home extends AppCompatActivity
     @Override
     protected void onPostResume() {
         super.onPostResume();
-        fab.setCount(new Database(Home.this).getCountCart());
+        fab.setCount(new Database(Home.this).getCountCart(userInformation.get(SessionManager.KEY_PHONENUMBER)));
     }
 
     @Override

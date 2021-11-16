@@ -56,12 +56,16 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
 
     Food currentFood;
 
+    SessionManager sessionManager;
+    HashMap<String, String> userInformation;
+
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             //region Button Cart
             if (v.getId() == R.id.btnCart){
                 new Database(getBaseContext()).addToCart(new Order(
+                        userInformation.get(SessionManager.KEY_PHONENUMBER),
                         foodId,
                         currentFood.getName(),
                         numberButton.getNumber(),
@@ -118,6 +122,9 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
         collapsingToolbarLayout = findViewById(R.id.collapsing);
         //collapsingToolbarLayout.setExpandedTitleTextAppearance(R.style.ExpandedAppbar);
         //collapsingToolbarLayout.setCollapsedTitleTextAppearance(R.style.CollapsedAppbar);
+
+        sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        userInformation = sessionManager.getInfomationUser();
 
         btnCart.setOnClickListener(onClickListener);
         btnRate.setOnClickListener(onClickListener);
@@ -203,7 +210,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
                 foodId,
                 String.valueOf(value),
                 comments);
-        ratingDB.push()
+                ratingDB.push()
                 .setValue(rating)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -212,26 +219,6 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
                     }
                 });
 
-        /*ratingDB.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).exists()){
-                    //Remove old value
-                    ratingDB.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).removeValue();
-                    //Update new value
-                    ratingDB.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).setValue(rating);
-                }else {
-                    //Update new value
-                    ratingDB.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).setValue(rating);
-                }
-                Toast.makeText(FoodDetail.this, "Thanks for submit rating food", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });*/
     }
 
     private void getRatingFood(String foodId) {
@@ -262,7 +249,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
     @Override
     protected void onResume() {
         super.onResume();
-        btnCart.setCount(new Database(FoodDetail.this).getCountCart());
+        btnCart.setCount(new Database(FoodDetail.this).getCountCart(userInformation.get(SessionManager.KEY_PHONENUMBER)));
     }
 
     //endregion

@@ -15,7 +15,6 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -65,7 +64,7 @@ public class TrackingOrder extends FragmentActivity implements
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 7000;
     private final static int LOCATION_PERMISSION_REQUEST = 7001;
 
-    private FusedLocationProviderClient mLastLocation;
+    private Location mLastLocation;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
 
@@ -90,14 +89,14 @@ public class TrackingOrder extends FragmentActivity implements
 //        setContentView(binding.getRoot());
 
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        if (mGoogleApiClient != null){
+            mGoogleApiClient.connect();
+            return;
+        }
 
         mService = Common.getGeoCodeService();
 
-        mLastLocation = LocationServices.getFusedLocationProviderClient(TrackingOrder.this);
+        //mLastLocation = LocationServices.getFusedLocationProviderClient(TrackingOrder.this);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -113,6 +112,11 @@ public class TrackingOrder extends FragmentActivity implements
 
         displayLocation();
 
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
     }
 
     private void displayLocation() {
@@ -124,29 +128,24 @@ public class TrackingOrder extends FragmentActivity implements
             requestRuntimePermission();
         } else {
 
-            mLastLocation.getLastLocation()
-                    .addOnSuccessListener(TrackingOrder.this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            // Got last known location. In some rare situations this can be null.
-                            if (location != null) {
-                                double latitude = location.getLatitude();
-                                double longitude = location.getLongitude();
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
-                                //Marker your location and move
-                                LatLng yourLocation = new LatLng(latitude, longitude);
-                                mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
+            // Got last known location. In some rare situations this can be null.
+            if (mLastLocation != null) {
+                double latitude = mLastLocation.getLatitude();
+                double longitude = mLastLocation.getLongitude();
 
-                                //Add Marker for Order and draw route
-                                drawRoute(yourLocation,Common.currentRequest.getAddress());
-                            }else {
-                                Toast.makeText(TrackingOrder.this, "Couldn't get the location", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
+                //Marker your location and move
+                LatLng yourLocation = new LatLng(latitude, longitude);
+                mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(15),2000,null);
 
+                //Add Marker for Order and draw route
+                drawRoute(yourLocation,Common.currentRequest.getAddress());
+            }else {
+                Toast.makeText(TrackingOrder.this, "Couldn't get the location", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -343,7 +342,7 @@ public class TrackingOrder extends FragmentActivity implements
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
-        //mLastLocation = location;
+        mLastLocation = location;
         displayLocation();
     }
 

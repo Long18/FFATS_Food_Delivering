@@ -22,6 +22,9 @@
         android:theme="@style/Theme.FFATS.NoActionBar"
         tools:replace="android:theme">
         <activity
+            android:name=".BannerManager"
+            android:exported="false" />
+        <activity
             android:name=".OrderDetail"
             android:exported="false" />
 
@@ -72,26 +75,24 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".Service.FirebaseMessaging"
-            android:stopWithTask="false"
-            android:exported="false">
+        <service
+            android:name=".Service.FirebaseMessaging"
+            android:exported="false"
+            android:stopWithTask="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-
-        <service android:name=".Service.FirebaseIdService"
-            android:stopWithTask="false"
-            android:exported="false">
+        <service
+            android:name=".Service.FirebaseIdService"
+            android:exported="false"
+            android:stopWithTask="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-
     </application>
-
-
 
 </manifest>

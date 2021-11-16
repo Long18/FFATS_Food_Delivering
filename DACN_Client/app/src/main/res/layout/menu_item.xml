@@ -5,7 +5,7 @@
     android:layout_height="200dp"
     android:layout_margin="10dp"
     app:cardElevation="10dp"
-    app:cardCornerRadius="3dp">
+    app:cardCornerRadius="10dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -21,14 +21,14 @@
 
         <TextView
             android:id="@+id/menu_name"
-            android:textColor="@color/black"
-            android:text="Tên Menu"
-            android:textSize="20sp"
-            android:gravity="center"
-            android:layout_centerInParent="true"
-            android:background="@color/overlayBackground"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@color/overlayBackground"
+            android:gravity="center"
+            android:text="Tên Menu"
+            android:textColor="@color/black"
+            android:textSize="20sp" />
 
 
 

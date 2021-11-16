@@ -7,6 +7,7 @@
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/drawable-v24/circle_dialog.xml" value="0.37916666666666665" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/drawable-v24/ic_launcher_background.xml" value="0.21927083333333333" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.37916666666666665" />
+        <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/activity_banner_manager.xml" value="0.34479166666666666" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/activity_cart.xml" value="0.14907407407407408" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/activity_food_detail.xml" value="0.14907407407407408" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/activity_food_list.xml" value="0.14907407407407408" />
@@ -17,9 +18,11 @@
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/activity_order_status.xml" value="0.36302083333333335" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/activity_sign_in.xml" value="0.1" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/activity_sign_up.xml" value="0.1" />
+        <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/add_new_banner.xml" value="0.35885416666666664" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/add_new_food_layout.xml" value="0.36302083333333335" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/add_new_menu_layout.xml" value="0.14" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/app_bar_home.xml" value="0.1" />
+        <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/banner_layout.xml" value="0.35885416666666664" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/cart_layout.xml" value="0.14907407407407408" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/content_home.xml" value="0.1" />
         <entry key="..\:/Users/William/Desktop/FFATS_Food_Delivering/DACN_Server/app/src/main/res/layout/food_item.xml" value="0.14907407407407408" />

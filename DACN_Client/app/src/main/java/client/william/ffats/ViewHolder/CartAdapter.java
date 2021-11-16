@@ -1,5 +1,7 @@
 package client.william.ffats.ViewHolder;
 
+import static com.facebook.FacebookSdk.getApplicationContext;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.ContextMenu;
@@ -17,56 +19,25 @@ import com.squareup.picasso.Picasso;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import client.william.ffats.Cart;
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
+import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
 import client.william.ffats.Model.Order;
 import client.william.ffats.R;
-
-class CartViewHolder extends RecyclerView.ViewHolder implements
-        View.OnClickListener,
-        View.OnCreateContextMenuListener{
-
-    public TextView txtCartName, txtPrice;
-    public ElegantNumberButton btnQuantity;
-    public ImageView cartImage;
-
-    private ItemClickListener itemClickListener;
-
-    public void setTxtCartName(TextView txtCartName) {
-        this.txtCartName = txtCartName;
-    }
-
-    public CartViewHolder(@NonNull View itemView) {
-        super(itemView);
-        txtCartName = itemView.findViewById(R.id.cart_item_name);
-        txtPrice = itemView.findViewById(R.id.cart_item_Price);
-        btnQuantity = itemView.findViewById(R.id.btn_quantity);
-        cartImage = itemView.findViewById(R.id.cartImage);
-
-        itemView.setOnCreateContextMenuListener(this);
-    }
-
-    @Override
-    public void onClick(View view) {
-
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        menu.setHeaderTitle("Select action");
-        menu.add(0,0,getAdapterPosition(), Common.DELETE);
-    }
-}
 
 public class CartAdapter extends RecyclerView.Adapter<CartViewHolder>{
 
     private List<Order> listData = new ArrayList<>();
     private Cart cart;
+
+    SessionManager sessionManager;
+    HashMap<String, String> userInformation;
 
     public CartAdapter(List<Order> listData, Cart cart) {
         this.listData = listData;
@@ -100,9 +71,12 @@ public class CartAdapter extends RecyclerView.Adapter<CartViewHolder>{
                 order.setQuantity(String.valueOf(newValue));
                 new Database(cart).updateCart(order);
 
+                sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+                userInformation = sessionManager.getInfomationUser();
+
                 //calculating total price
                 int total = 0;
-                List<Order> orders = new Database(cart).getCart();
+                List<Order> orders = new Database(cart).getCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
                 for (Order item : orders)
                     total += (Integer.parseInt(order.getPrice())) * (Integer.parseInt(order.getQuantity()));
                 Locale locale = new Locale("vn", "VN");
@@ -129,5 +103,19 @@ public class CartAdapter extends RecyclerView.Adapter<CartViewHolder>{
     @Override
     public int getItemCount() {
         return listData.size();
+    }
+
+    public Order getItem(int position){
+        return listData.get(position);
+    }
+
+    public void removeItem(int position){
+        listData.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    public void restoreItem(Order item,int position){
+        listData.add(position,item);
+        notifyItemInserted(position);
     }
 }

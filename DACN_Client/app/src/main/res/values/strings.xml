@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">FFATS</string>
-    <string name="facebook_app_id">435206154792265</string>
-    <string name="facebook_login_protocol_name">fb435206154792265</string>
     <string name="ffats_places">AIzaSyDh4_jZf4TOBFC9lJhuS4AAKNVO6tLGRVY</string>
     <string name="slogan">Here iss my slogannnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn</string>
     <string name="text_signup">Keep your phone we will texted you a verification code to your phone number</string>
@@ -18,4 +16,9 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
+
+    <!--    Facebook    -->
+    <string name="facebook_app_id">435206154792265</string>
+    <string name="facebook_login_protocol_name">fb435206154792265</string>
+    <string name="fb_login_protocol_scheme">fb435206154792265</string>
 </resources>

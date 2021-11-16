@@ -1,6 +1,7 @@
 package server.william.ffats;
 
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -68,6 +69,7 @@ public class OrderStatus extends AppCompatActivity {
         recyclerView.setLayoutManager(layoutManager);
 
         loadOrder();
+
     }
 
 
@@ -78,7 +80,7 @@ public class OrderStatus extends AppCompatActivity {
                         .build();
         adapter = new FirebaseRecyclerAdapter<Request, OrderViewHolder>(options) {
             @Override
-            protected void onBindViewHolder(@NonNull OrderViewHolder holder,final int position, @NonNull Request model) {
+            protected void onBindViewHolder(@NonNull OrderViewHolder holder, @SuppressLint("RecyclerView")final int position, @NonNull Request model) {
                 holder.txtOrderId.setText(adapter.getRef(position).getKey());
                 holder.txtOrderStatus.setText(Common.convertCodeToStatus(model.getStatus()));
                 holder.txtAddress.setText(model.getAddress());

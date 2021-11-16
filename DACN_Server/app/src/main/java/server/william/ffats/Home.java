@@ -151,6 +151,9 @@ public class Home extends AppCompatActivity
         Intent service = new Intent(Home.this, ListenOrder.class);
         startService(service);
 
+        Intent intent = new Intent(Home.this, TrackingOrder.class);
+        startService(intent);
+
         String token = FirebaseMessaging.getInstance().getToken().toString();
         updateToken(token);
     }
@@ -392,7 +395,8 @@ public class Home extends AppCompatActivity
             startActivity(menuIntent);
 
         } else if (id == R.id.nav_favorites) {
-            Toast.makeText(Home.this, "okok", Toast.LENGTH_SHORT).show();
+            Intent banner = new Intent(Home.this, BannerManager.class);
+            startActivity(banner);
 
         }else if (id == R.id.nav_payment) {
             Intent cartIntent = new Intent(Home.this, OrderStatus.class);

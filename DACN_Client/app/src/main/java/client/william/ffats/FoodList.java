@@ -36,10 +36,12 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
+import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
 import client.william.ffats.Model.Food;
 import client.william.ffats.Model.Order;
@@ -58,6 +60,9 @@ public class FoodList extends AppCompatActivity {
     String categoryId = "";
 
     FirebaseRecyclerAdapter<Food, FoodViewHolder> adapter;
+
+    SessionManager sessionManager;
+    HashMap<String, String> userInformation;
 
     //Search
     FirebaseRecyclerAdapter<Food, FoodViewHolder> searchAdapter;
@@ -119,59 +124,16 @@ public class FoodList extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
+        sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        userInformation = sessionManager.getInfomationUser();
+
         //Search
         searchBar = findViewById(R.id.searchBar);
-        searchBar.setHint("Enter your food");
-        loadSuggest();
-        searchBar.setLastSuggestions(suggestList);
-        searchBar.setCardViewElevation(10);
 
         //Facebook
         callbackManager = CallbackManager.Factory.create();
         shareDialog = new ShareDialog(this);
 
-        searchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
-            @Override
-            public void onSearchStateChanged(boolean enabled) {
-                //When Search bar iss close ==> return original adapter
-                if (!enabled)
-                    recyclerView.setAdapter(adapter);
-            }
-
-            @Override
-            public void onSearchConfirmed(CharSequence text) {
-                //When search finish ==> show result
-                startSearch(text);
-            }
-
-            @Override
-            public void onButtonClicked(int buttonCode) {
-
-            }
-        });
-        searchBar.addTextChangeListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                //When user typing ==> suggest
-                List<String> suggest = new ArrayList<>();
-                for (String search:suggestList) //loop info suggest
-                {
-                    if (search.toLowerCase().contains(searchBar.getText().toLowerCase()))
-                        suggest.add(search);
-                }
-                searchBar.setLastSuggestions(suggest);
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-
-            }
-        });
 
         //Swipe to reload page
         swipeRefreshLayout = findViewById(R.id.swipe_layout);
@@ -210,6 +172,54 @@ public class FoodList extends AppCompatActivity {
                         return;
                     }
                 }
+                //endregion
+                //region Search Function
+                searchBar.setHint("Enter your food");
+                loadSuggest();
+                searchBar.setLastSuggestions(suggestList);
+                searchBar.setCardViewElevation(10);
+                searchBar.setOnSearchActionListener(new MaterialSearchBar.OnSearchActionListener() {
+                    @Override
+                    public void onSearchStateChanged(boolean enabled) {
+                        //When Search bar iss close ==> return original adapter
+                        if (!enabled)
+                            recyclerView.setAdapter(adapter);
+                    }
+
+                    @Override
+                    public void onSearchConfirmed(CharSequence text) {
+                        //When search finish ==> show result
+                        startSearch(text);
+                    }
+
+                    @Override
+                    public void onButtonClicked(int buttonCode) {
+
+                    }
+                });
+                searchBar.addTextChangeListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        //When user typing ==> suggest
+                        List<String> suggest = new ArrayList<>();
+                        for (String search:suggestList) //loop info suggest
+                        {
+                            if (search.toLowerCase().contains(searchBar.getText().toLowerCase()))
+                                suggest.add(search);
+                        }
+                        searchBar.setLastSuggestions(suggest);
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+
+                    }
+                });
                 //endregion
             }
         });
@@ -270,7 +280,7 @@ public class FoodList extends AppCompatActivity {
     }
 
     private void loadSuggest() {
-        foodList.orderByChild("MenuId").equalTo(categoryId)
+        foodList.orderByChild("menuId").equalTo(categoryId)
                 .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -278,6 +288,7 @@ public class FoodList extends AppCompatActivity {
                     Food item = postSnapshot.getValue(Food.class);
                     suggestList.add(item.getName()); //Add name to suggest list
                 }
+                searchBar.setLastSuggestions(suggestList);
             }
 
             @Override
@@ -301,26 +312,34 @@ public class FoodList extends AppCompatActivity {
                                             @NonNull final Food model) {
 
                 viewHolder.txtFoodName.setText(model.getName());
-                viewHolder.txtFoodPrice.setText(String.format("%s Đ",model.getPrice().toString()));
+                viewHolder.txtFoodPrice.setText(String.format("%s đ",model.getPrice().toString()));
 
                 Picasso.get().load(model.getImage())
                         .into(viewHolder.imageFood);
 
+                boolean isExists = new Database(getBaseContext())
+                        .checkFoodExists(adapter.getRef(position).getKey(),userInformation.get(SessionManager.KEY_PHONENUMBER));
                 viewHolder.btnQuickCart.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        new Database(getBaseContext()).addToCart(new Order(
-                                adapter.getRef(position).getKey(),
-                                model.getName(),
-                                "1",
-                                model.getPrice(),
-                                model.getDiscount(),
-                                model.getImage()
-                        ));
-
+                        if (!isExists) {
+                            new Database(getBaseContext()).addToCart(new Order(
+                                    userInformation.get(SessionManager.KEY_PHONENUMBER),
+                                    adapter.getRef(position).getKey(),
+                                    model.getName(),
+                                    "1",
+                                    model.getPrice(),
+                                    model.getDiscount(),
+                                    model.getImage()
+                            ));
+                        }else {
+                            new Database(getBaseContext())
+                                    .increaseCart(userInformation.get(SessionManager.KEY_PHONENUMBER),adapter.getRef(position).getKey());
+                        }
                         Toast.makeText(FoodList.this, "Added to Cart", Toast.LENGTH_SHORT).show();
                     }
                 });
+
 
                 //Click share
                 viewHolder.fav_share.setOnClickListener(new View.OnClickListener() {
@@ -334,19 +353,19 @@ public class FoodList extends AppCompatActivity {
                 });
 
                 //Add favorites
-                if (localDB.isFavorites(adapter.getRef(position).getKey())){
+                if (localDB.isFavorites(adapter.getRef(position).getKey(),userInformation.get(SessionManager.KEY_PHONENUMBER))){
                     viewHolder.fav_image.setImageResource(R.drawable.heart_filled);
                 }
 
                 viewHolder.fav_image.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (!localDB.isFavorites(adapter.getRef(position).getKey())){
-                            localDB.addToFavorites(adapter.getRef(position).getKey());
+                        if (!localDB.isFavorites(adapter.getRef(position).getKey(),userInformation.get(SessionManager.KEY_PHONENUMBER))){
+                            localDB.addToFavorites(adapter.getRef(position).getKey(),userInformation.get(SessionManager.KEY_PHONENUMBER));
                             viewHolder.fav_image.setImageResource(R.drawable.heart_filled);
                             Toast.makeText(FoodList.this, model.getName() + " was added to favorites", Toast.LENGTH_SHORT).show();
                         }else{
-                            localDB.removeFavorites(adapter.getRef(position).getKey());
+                            localDB.removeFavorites(adapter.getRef(position).getKey(),userInformation.get(SessionManager.KEY_PHONENUMBER));
                             viewHolder.fav_image.setImageResource(R.drawable.heart);
                             Toast.makeText(FoodList.this, model.getName() + " was remove to favorites", Toast.LENGTH_SHORT).show();
                         }

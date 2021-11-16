@@ -6,7 +6,7 @@
     android:layout_height="400dp"
     app:cardElevation="10dp"
     android:layout_margin="10dp"
-    app:cardCornerRadius="3dp"
+    app:cardCornerRadius="10dp"
     android:layout_marginBottom="8dp">
 
     <LinearLayout
@@ -23,7 +23,7 @@
             android:layout_height="0dp"
             android:layout_weight="4"
             android:scaleType="centerCrop"
-            android:src="@drawable/wait" />
+            android:src="@drawable/wait"/>
 
         <LinearLayout
             android:weightSum="10"

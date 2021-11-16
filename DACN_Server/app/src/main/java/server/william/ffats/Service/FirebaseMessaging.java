@@ -17,6 +17,8 @@ import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -26,8 +28,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import server.william.ffats.Common.Common;
 import server.william.ffats.Database.SessionManager;
 import server.william.ffats.Helper.NotificationHelper;
+import server.william.ffats.MainActivity;
+import server.william.ffats.Model.Token;
 import server.william.ffats.OrderStatus;
 import server.william.ffats.R;
 
@@ -36,8 +41,23 @@ public class FirebaseMessaging extends FirebaseMessagingService {
 
     @Override
     public void onNewToken(String s) {
-        Log.e("NEW_TOKEN", s);
+        super.onNewToken(s);
+        //String tokenRefreshed = FirebaseInstanceId.getInstance().getToken();
+        if(Common.currentUser != null)
+            updateTokenToFirebase(s);
     }
+
+    private void updateTokenToFirebase(String tokenRefreshed) {
+        FirebaseDatabase db= FirebaseDatabase.getInstance();
+        DatabaseReference tokens= db.getReference("Tokens");
+        Token token=new Token(tokenRefreshed,true);//client side
+
+        SessionManager sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
+        HashMap<String, String> userInformation = sessionManager.getInfomationUser();
+
+        tokens.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).setValue(token);
+    }
+
 
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
@@ -72,6 +92,45 @@ public class FirebaseMessaging extends FirebaseMessagingService {
     }
 
     private void sendNotification(RemoteMessage remoteMessage) {
+
+
+
+
+        String Notification_channel_id= "William";
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            NotificationChannel channel = new NotificationChannel(Notification_channel_id,
+                    "Notification", NotificationManager.IMPORTANCE_DEFAULT);
+
+            channel.setDescription("FFAST");
+            channel.enableLights(true);
+            channel.setLightColor(Color.BLUE);
+
+            NotificationManager notificationManager=getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+
+        }
+
+        RemoteMessage.Notification notification=remoteMessage.getNotification();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent contentIntent = PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_ONE_SHOT);
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+        NotificationCompat.Builder builder= new NotificationCompat.Builder(this,Notification_channel_id);
+        builder.setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(notification.getTitle())
+                .setContentText(notification.getBody())
+                .setAutoCancel(true)
+                .setSound(defaultSoundUri)
+                .setContentIntent(contentIntent);
+
+        NotificationManager notificationManager =(NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(new Random().nextInt(),builder.build());
+
+    }
+
+   /* private void sendNotification(RemoteMessage remoteMessage) {
         Map<String, String> params = remoteMessage.getData();
         JSONObject object = new JSONObject(params);
         Log.e("JSON_OBJECT", object.toString());
@@ -114,5 +173,5 @@ public class FirebaseMessaging extends FirebaseMessagingService {
 
 
         mNotificationManager.notify(1000, notificationBuilder.build());
-    }
+    }*/
 }
