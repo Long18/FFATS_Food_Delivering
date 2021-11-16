@@ -35,6 +35,7 @@ import com.squareup.picasso.Picasso;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
@@ -68,6 +69,7 @@ public class Home extends AppCompatActivity
     RecyclerView recycler_menu;
     RecyclerView.LayoutManager linearLayoutManager;
     FirebaseRecyclerAdapter<Category, MenuViewHolder> adapter;
+    CardView cardSearch;
 
     SwipeRefreshLayout swipeRefreshLayout;
     CounterFab fab;
@@ -86,12 +88,14 @@ public class Home extends AppCompatActivity
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            //region Add to cart
             if (v.getId() == R.id.fab){
-                //region Add to cart
                 Intent cartIntent = new Intent(Home.this, Cart.class);
                 startActivity(cartIntent);
-                //endregion
+
             }
+            //endregion
+
         }
     };
 
@@ -132,6 +136,15 @@ public class Home extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         TextFullName = headerView.findViewById(R.id.txtFullName);
         txtSeeMore = headerView.findViewById(R.id.txtSeeMore);
+
+        cardSearch = findViewById(R.id.card_search);
+        cardSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent search = new Intent(Home.this, Search.class);
+                startActivity(search);
+            }
+        });
 
         TextFullName.setText(userInformation.get(SessionManager.KEY_FULLNAME));
 
