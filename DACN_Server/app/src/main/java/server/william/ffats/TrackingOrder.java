@@ -92,6 +92,8 @@ public class TrackingOrder extends FragmentActivity implements
     double latitude;
     double longitude;
 
+    boolean isFirstTime = false;
+
     private static int UPDATE_INTERVAL = 5000;
     private static int FAST_INTERVAL = 3000;
     private static int DISPLACEMENT = 10;
@@ -105,6 +107,7 @@ public class TrackingOrder extends FragmentActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tracking_order);
+        isFirstTime = true;
 
         sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
         userInformation = sessionManager.getInfomationUser();
@@ -168,9 +171,13 @@ public class TrackingOrder extends FragmentActivity implements
 
                     //Marker your location and move
                     LatLng yourLocation = new LatLng(latitude, longitude);
-                    mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+                    if (isFirstTime){
+                        mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+                        isFirstTime = false;
+                    }
+
 
                     if (ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         // TODO: Consider calling
