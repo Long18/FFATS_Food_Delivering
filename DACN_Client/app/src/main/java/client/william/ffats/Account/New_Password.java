@@ -18,6 +18,7 @@ import client.william.ffats.Model.User;
 import client.william.ffats.R;
 
 public class New_Password extends AppCompatActivity {
+    //region Declare Variable
     FirebaseDatabase database;
     DatabaseReference table_user;
 
@@ -55,7 +56,7 @@ public class New_Password extends AppCompatActivity {
             //endregion
         }
     };
-
+    //endregion
 
     //region Function Activity
     @Override

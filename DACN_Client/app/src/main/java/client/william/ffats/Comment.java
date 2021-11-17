@@ -26,7 +26,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class Comment extends AppCompatActivity {
-
+    //region Declare Variable
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
 
@@ -37,7 +37,9 @@ public class Comment extends AppCompatActivity {
     String foodId= "";
 
     FirebaseRecyclerAdapter<Rate, CommentViewHolder> adapter;
+    //endregion
 
+    //region Activity Function
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -143,13 +145,14 @@ public class Comment extends AppCompatActivity {
         });
     }
 
-
     private void insertData() {
         db = FirebaseDatabase.getInstance();
         ratingDBR = db.getReference("Rating");
 
     }
+    //endregion
 
+    //region Function
     private void loadComment(String foodId) {
         adapter.startListening();
 
@@ -164,4 +167,5 @@ public class Comment extends AppCompatActivity {
             adapter.stopListening();
         }
     }
+    //endregion
 }

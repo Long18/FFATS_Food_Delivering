@@ -34,6 +34,7 @@ import client.william.ffats.R;
 import io.paperdb.Paper;
 
 public class Sign_In extends AppCompatActivity {
+    //region Declare Variable
     TextInputEditText editPhone, edtPassword;
     Button btnSignIn;
     CheckBox ckbRemember;
@@ -43,7 +44,6 @@ public class Sign_In extends AppCompatActivity {
 
     boolean phoneCheck = false;
     boolean passCheck = false;
-
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -141,6 +141,7 @@ public class Sign_In extends AppCompatActivity {
 
         }
     };
+    //endregion
 
     //region Activity Function
     @Override

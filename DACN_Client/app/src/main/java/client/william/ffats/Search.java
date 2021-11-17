@@ -43,12 +43,13 @@ import java.util.List;
 import client.william.ffats.Database.Database;
 import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
+import client.william.ffats.Model.Favorites;
 import client.william.ffats.Model.Food;
 import client.william.ffats.Model.Order;
 import client.william.ffats.ViewHolder.FoodViewHolder;
 
 public class Search extends AppCompatActivity {
-
+    //region Declare Variable
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
 
@@ -94,6 +95,7 @@ public class Search extends AppCompatActivity {
 
         }
     };
+    //endregion
 
     //region Activity Function
     @Override
@@ -245,8 +247,19 @@ public class Search extends AppCompatActivity {
                 viewHolder.fav_image.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+
+                        Favorites favorites = new Favorites();
+                        favorites.setFoodId(adapter.getRef(position).getKey());
+                        favorites.setFoodName(model.getName());
+                        favorites.setFoodDescription(model.getDescription());
+                        favorites.setFoodDiscount(model.getDiscount());
+                        favorites.setFoodImage(model.getImage());
+                        favorites.setFoodMenuId(model.getMenuId());
+                        favorites.setFoodPrice(model.getPrice());
+                        favorites.setUserPhone(userInformation.get(SessionManager.KEY_PHONENUMBER));
+
                         if (!localDB.isFavorites(adapter.getRef(position).getKey(),userInformation.get(SessionManager.KEY_PHONENUMBER))){
-                            localDB.addToFavorites(adapter.getRef(position).getKey(),userInformation.get(SessionManager.KEY_PHONENUMBER));
+                            localDB.addToFavorites(favorites);
                             viewHolder.fav_image.setImageResource(R.drawable.heart_filled);
                             Toast.makeText(Search.this, model.getName() + " was added to favorites", Toast.LENGTH_SHORT).show();
                         }else{

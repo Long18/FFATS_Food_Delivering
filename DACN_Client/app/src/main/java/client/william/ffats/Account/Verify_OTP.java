@@ -30,6 +30,7 @@ import client.william.ffats.MainActivity;
 import client.william.ffats.R;
 
 public class Verify_OTP extends AppCompatActivity {
+    //region Declare Variable
     PinView pinView;
 
     String phoneNumber,fullName,ToDO,codeSystem,Pass;
@@ -52,6 +53,7 @@ public class Verify_OTP extends AppCompatActivity {
             //endregion
         }
     };
+    //endregion
 
     //region Activity Function
     @Override
@@ -119,7 +121,6 @@ public class Verify_OTP extends AppCompatActivity {
         Pass = getIntent().getStringExtra("Pass");
     }
     //endregion
-
 
     //region Function
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {

@@ -17,7 +17,7 @@ import com.hbb20.CountryCodePicker;
 import client.william.ffats.R;
 
 public class Sign_Up extends AppCompatActivity {
-
+    //region Declare Variable
     TextInputLayout txtInPhoneNumber, txtInFullName, txtInLastName;
     TextView txtLoginAccount;
     CountryCodePicker countryNumber;
@@ -62,7 +62,7 @@ public class Sign_Up extends AppCompatActivity {
             //endregion
         }
     };
-
+    //endregion
 
     //region Function Activity
     @Override
@@ -71,10 +71,7 @@ public class Sign_Up extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_sign_up);
 
-
         viewConstructor();
-
-
     }
 
     private void viewConstructor() {
@@ -174,6 +171,5 @@ public class Sign_Up extends AppCompatActivity {
         txtLoginAccount.setOnClickListener(onClickListener);
     }
     //endregion
-
 
 }

@@ -41,7 +41,7 @@ import io.paperdb.Paper;
 
 
 public class MainActivity extends AppCompatActivity {
-
+    //region Declare Variable
     Button btnSignIn, btnSignUp;
     TextView txtSlogan;
 
@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
             //endregion
         }
     };
+    //endregion
 
     //region Activity Function
     @Override
@@ -120,8 +121,9 @@ public class MainActivity extends AppCompatActivity {
     }
     //endregion
 
+    //region Function
 
-    //region Get KeyHash
+        //region Get KeyHash
     public static String printKeyHash(Activity context) {
         PackageInfo packageInfo;
         String key = null;
@@ -154,9 +156,6 @@ public class MainActivity extends AppCompatActivity {
         return key;
     }
     //endregion
-
-
-    //region Function
     private void login(String phone, String pwd,String cpp) {
         if(Common.isConnectedToInternet(getBaseContext())) {
 

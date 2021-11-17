@@ -54,10 +54,6 @@ public class CartAdapter extends RecyclerView.Adapter<CartViewHolder>{
 
     @Override
     public void onBindViewHolder(@NonNull CartViewHolder holder, @SuppressLint("RecyclerView") final int position) {
-//        TextDrawable drawable = TextDrawable.builder()
-//                .buildRound(""+listData.get(position).getQuantity(), Color.RED);
-//        holder.imgCartCount.setImageDrawable(drawable);
-
         Picasso.get().load(listData.get(position).getImage())
                 .resize(70,70)
                 .centerCrop()

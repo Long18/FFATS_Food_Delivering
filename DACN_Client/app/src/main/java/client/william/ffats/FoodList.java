@@ -43,12 +43,13 @@ import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
 import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
+import client.william.ffats.Model.Favorites;
 import client.william.ffats.Model.Food;
 import client.william.ffats.Model.Order;
 import client.william.ffats.ViewHolder.FoodViewHolder;
 
 public class FoodList extends AppCompatActivity {
-
+    //region Declare Variable
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
 
@@ -100,7 +101,7 @@ public class FoodList extends AppCompatActivity {
     };
 
     SwipeRefreshLayout swipeRefreshLayout;
-
+    //endregion
 
     //region Activity Function
     @Override
@@ -135,7 +136,7 @@ public class FoodList extends AppCompatActivity {
         shareDialog = new ShareDialog(this);
 
 
-        //Swipe to reload page
+        //region Swipe to reload page
         swipeRefreshLayout = findViewById(R.id.swipe_layout);
         swipeRefreshLayout.setColorSchemeColors(R.color.colorPrimary,
                 android.R.color.holo_purple,
@@ -223,6 +224,7 @@ public class FoodList extends AppCompatActivity {
                 //endregion
             }
         });
+        //endregion
         //region Get Intent
         if (getIntent() != null)
             categoryId = getIntent().getStringExtra("CategoryId");
@@ -360,8 +362,19 @@ public class FoodList extends AppCompatActivity {
                 viewHolder.fav_image.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+
+                        Favorites favorites = new Favorites();
+                        favorites.setFoodId(adapter.getRef(position).getKey());
+                        favorites.setFoodName(model.getName());
+                        favorites.setFoodDescription(model.getDescription());
+                        favorites.setFoodDiscount(model.getDiscount());
+                        favorites.setFoodImage(model.getImage());
+                        favorites.setFoodMenuId(model.getMenuId());
+                        favorites.setFoodPrice(model.getPrice());
+                        favorites.setUserPhone(userInformation.get(SessionManager.KEY_PHONENUMBER));
+
                         if (!localDB.isFavorites(adapter.getRef(position).getKey(),userInformation.get(SessionManager.KEY_PHONENUMBER))){
-                            localDB.addToFavorites(adapter.getRef(position).getKey(),userInformation.get(SessionManager.KEY_PHONENUMBER));
+                            localDB.addToFavorites(favorites);
                             viewHolder.fav_image.setImageResource(R.drawable.heart_filled);
                             Toast.makeText(FoodList.this, model.getName() + " was added to favorites", Toast.LENGTH_SHORT).show();
                         }else{

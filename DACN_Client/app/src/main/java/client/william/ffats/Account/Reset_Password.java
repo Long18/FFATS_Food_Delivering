@@ -25,7 +25,7 @@ import com.rey.material.widget.CheckBox;
 import client.william.ffats.R;
 
 public class Reset_Password extends AppCompatActivity {
-
+    //region Declare Variable
     TextInputLayout txtInPhoneNumber;
     Button btnContinue;
 
@@ -77,7 +77,9 @@ public class Reset_Password extends AppCompatActivity {
             //endregion
         }
     };
+    //endregion
 
+    //region Activity Function
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,4 +126,5 @@ public class Reset_Password extends AppCompatActivity {
         btnContinue.setOnClickListener(onClickListener);
 
     }
+    //endregion
 }

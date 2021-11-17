@@ -26,7 +26,7 @@ import client.william.ffats.Model.Request;
 import client.william.ffats.ViewHolder.OrderViewHolder;
 
 public class OrderStatus extends AppCompatActivity {
-
+    //region Declare Variable
     public RecyclerView recyclerView;
     public RecyclerView.LayoutManager layoutManager;
     String phone;
@@ -35,6 +35,7 @@ public class OrderStatus extends AppCompatActivity {
 
     FirebaseDatabase database;
     DatabaseReference requests;
+    //endregion
 
     //region Activity Function
     @Override

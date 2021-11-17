@@ -86,7 +86,7 @@ public class Cart extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener, RecyclerItemTouchListener {
-
+    //region Declare Variable
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
 
@@ -132,8 +132,6 @@ public class Cart extends AppCompatActivity implements
 
     private LocationResolver mLocationResolver;
 
-
-
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -147,7 +145,6 @@ public class Cart extends AppCompatActivity implements
             //endregion
         }
     };
-
 
     CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
         @Override
@@ -188,6 +185,7 @@ public class Cart extends AppCompatActivity implements
             //endregion
         }
     };
+    //endregion
 
     //region Activity Function
     @Override
@@ -432,6 +430,49 @@ public class Cart extends AppCompatActivity implements
         loadListFood();
     }
 
+    @Override
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
+        if (viewHolder instanceof CartViewHolder){
+            String name = ((CartAdapter)recyclerView.getAdapter()).getItem(viewHolder.getAdapterPosition()).getProductName();
+
+            Order deleteItem = ((CartAdapter)recyclerView.getAdapter()).getItem(viewHolder.getAdapterPosition());
+            int deleteIndex = viewHolder.getAdapterPosition();
+
+            adapter.removeItem(deleteIndex);
+            new Database(getBaseContext()).removeCart(deleteItem.getProductId(),userInformation.get(SessionManager.KEY_PHONENUMBER));
+
+            //calculating total price
+            int total = 0;
+            List<Order> orders = new Database(getBaseContext()).getCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
+            for (Order item : orders)
+                total += (Integer.parseInt(item.getPrice())) * (Integer.parseInt(item.getQuantity()));
+            Locale locale = new Locale("vn", "VN");
+            NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
+            txtTotalPrice.setText(fmt.format(total));
+
+            //Popup Snackbar
+            Snackbar snackbar = Snackbar.make(rootLayout,name + "removed from cart",Snackbar.LENGTH_LONG);
+            snackbar.setAction("Undo", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    adapter.restoreItem(deleteItem,deleteIndex);
+                    new Database(getBaseContext()).addToCart(deleteItem);
+
+                    //calculating total price
+                    int total = 0;
+                    List<Order> orders = new Database(getBaseContext()).getCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
+                    for (Order item : orders)
+                        total += (Integer.parseInt(item.getPrice())) * (Integer.parseInt(item.getQuantity()));
+                    Locale locale = new Locale("vn", "VN");
+                    NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
+                    txtTotalPrice.setText(fmt.format(total));
+                }
+            });
+            snackbar.setActionTextColor(Color.YELLOW);
+            snackbar.show();
+        }
+    }
+
     private void checkPermissionLocation() {
         if (ActivityCompat.checkSelfPermission(Cart.this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -598,8 +639,6 @@ public class Cart extends AppCompatActivity implements
         displayLocation();
     }
 
-
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -617,49 +656,5 @@ public class Cart extends AppCompatActivity implements
         super.onDestroy();
         mLocationResolver.onDestroy();
     }
-
-    @Override
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
-        if (viewHolder instanceof CartViewHolder){
-            String name = ((CartAdapter)recyclerView.getAdapter()).getItem(viewHolder.getAdapterPosition()).getProductName();
-
-            Order deleteItem = ((CartAdapter)recyclerView.getAdapter()).getItem(viewHolder.getAdapterPosition());
-            int deleteIndex = viewHolder.getAdapterPosition();
-
-            adapter.removeItem(deleteIndex);
-            new Database(getBaseContext()).removeCart(deleteItem.getProductId(),userInformation.get(SessionManager.KEY_PHONENUMBER));
-
-            //calculating total price
-            int total = 0;
-            List<Order> orders = new Database(getBaseContext()).getCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
-            for (Order item : orders)
-                total += (Integer.parseInt(item.getPrice())) * (Integer.parseInt(item.getQuantity()));
-            Locale locale = new Locale("vn", "VN");
-            NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
-            txtTotalPrice.setText(fmt.format(total));
-
-            //Popup Snackbar
-            Snackbar snackbar = Snackbar.make(rootLayout,name + "removed from cart",Snackbar.LENGTH_LONG);
-            snackbar.setAction("Undo", new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    adapter.restoreItem(deleteItem,deleteIndex);
-                    new Database(getBaseContext()).addToCart(deleteItem);
-
-                    //calculating total price
-                    int total = 0;
-                    List<Order> orders = new Database(getBaseContext()).getCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
-                    for (Order item : orders)
-                        total += (Integer.parseInt(item.getPrice())) * (Integer.parseInt(item.getQuantity()));
-                    Locale locale = new Locale("vn", "VN");
-                    NumberFormat fmt = NumberFormat.getCurrencyInstance(locale);
-                    txtTotalPrice.setText(fmt.format(total));
-                }
-            });
-            snackbar.setActionTextColor(Color.YELLOW);
-            snackbar.show();
-        }
-    }
-
     //endregion
 }

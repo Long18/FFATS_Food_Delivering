@@ -39,7 +39,7 @@ import client.william.ffats.Model.Order;
 import client.william.ffats.Model.Rate;
 
 public class FoodDetail extends AppCompatActivity implements RatingDialogListener {
-
+    //region Declare Variable
     TextView food_name,food_price,food_description;
     ImageView food_image;
     CollapsingToolbarLayout collapsingToolbarLayout;
@@ -91,7 +91,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
             //endregion
         }
     };
-
+    //endregion
 
     //region Activity Function
     @Override

@@ -62,7 +62,7 @@ import io.paperdb.Paper;
 
 public class Home extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
+    //region Declare Variable
     FirebaseDatabase database;
     DatabaseReference category;
     TextView TextFullName,txtSeeMore;
@@ -83,8 +83,6 @@ public class Home extends AppCompatActivity
     SessionManager sessionManager;
     HashMap<String, String> userInformation;
 
-
-
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -98,6 +96,7 @@ public class Home extends AppCompatActivity
 
         }
     };
+    //endregion
 
     //region Activity Function
     @Override
@@ -386,7 +385,8 @@ public class Home extends AppCompatActivity
             startActivity(menuIntent);
 
         } else if (id == R.id.nav_favorites) {
-            Toast.makeText(Home.this, "okok", Toast.LENGTH_SHORT).show();
+            Intent fav = new Intent(Home.this, FavoritesActivity.class);
+            startActivity(fav);
 
         }else if (id == R.id.nav_payment) {
             Intent cartIntent = new Intent(Home.this, Cart.class);

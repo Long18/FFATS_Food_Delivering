@@ -32,6 +32,9 @@
         android:theme="@style/Theme.FFATS.NoActionBar"
         tools:replace="android:theme,android:icon">
         <activity
+            android:name=".FavoritesActivity"
+            android:exported="false" />
+        <activity
             android:name=".Search"
             android:exported="false" />
         <activity

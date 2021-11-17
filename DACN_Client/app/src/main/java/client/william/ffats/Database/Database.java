@@ -11,6 +11,7 @@ import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+import client.william.ffats.Model.Favorites;
 import client.william.ffats.Model.Order;
 
 public class Database extends SQLiteAssetHelper {
@@ -120,9 +121,41 @@ public class Database extends SQLiteAssetHelper {
         db.execSQL(query);
     }
 
-    public void addToFavorites(String foodId,String userPhone){
+    @SuppressLint("Range")
+    public List<Favorites> getFavorites(String userPhone){
         SQLiteDatabase db = getReadableDatabase();
-        String query = String.format("INSERT INTO Favorites(FoodId) VALUES('%s','%s');",foodId,userPhone);
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+
+        String[] sqlSelect = {"UserPhone","FoodId","FoodName","FoodPrice","FoodMenuId","FoodImage","FoodDiscount","FoodDescription"};
+        String sqlTable = "Favorites";
+
+        qb.setTables(sqlTable);
+        Cursor cursor = qb.query(db,sqlSelect,"UserPhone=?",
+                new String[]{userPhone},null,null,null);
+
+        final List<Favorites> result = new ArrayList<>();
+        if (cursor.moveToFirst())
+        {
+            do {
+                result.add(new Favorites(
+
+                        cursor.getString(cursor.getColumnIndex("FoodId")),
+                        cursor.getString(cursor.getColumnIndex("FoodName")),
+                        cursor.getString(cursor.getColumnIndex("FoodPrice")),
+                        cursor.getString(cursor.getColumnIndex("FoodMenuId")),
+                        cursor.getString(cursor.getColumnIndex("FoodImage")),
+                        cursor.getString(cursor.getColumnIndex("FoodDiscount")),
+                        cursor.getString(cursor.getColumnIndex("FoodDescription")),
+                        cursor.getString(cursor.getColumnIndex("UserPhone"))));
+            }while (cursor.moveToNext());
+        }
+        return result;
+    }
+
+    public void addToFavorites(Favorites food){
+        SQLiteDatabase db = getReadableDatabase();
+        String query = String.format("INSERT INTO Favorites(FoodId,FoodName,FoodPrice,FoodMenuId,FoodImage,FoodDiscount,FoodDescription,UserPhone) VALUES('%s','%s','%s','%s','%s','%s','%s','%s');"
+                ,food.getFoodId(),food.getFoodName(),food.getFoodPrice(),food.getFoodMenuId(),food.getFoodImage(),food.getFoodDiscount(),food.getFoodDescription(),food.getUserPhone());
         db.execSQL(query);
     }
 
