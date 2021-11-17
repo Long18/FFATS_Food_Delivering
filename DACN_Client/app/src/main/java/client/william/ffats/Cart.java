@@ -195,7 +195,6 @@ public class Cart extends AppCompatActivity implements
 
         insertData();
         viewConstructor();
-        checkPermissionLocation();
 
     }
 
@@ -235,6 +234,7 @@ public class Cart extends AppCompatActivity implements
     }
 
     private void insertData() {
+        checkPermissionLocation();
         // Firebase
         database = FirebaseDatabase.getInstance();
         requests = database.getReference("Requests");
@@ -395,7 +395,7 @@ public class Cart extends AppCompatActivity implements
         });
     }
 
-    private void loadListFood() {
+    public void loadListFood() {
         cart = new Database(this).getCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
         adapter = new CartAdapter(cart, this);
         adapter.notifyDataSetChanged();
