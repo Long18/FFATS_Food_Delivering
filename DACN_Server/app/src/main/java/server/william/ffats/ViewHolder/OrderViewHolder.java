@@ -15,7 +15,7 @@ import server.william.ffats.R;
 public class OrderViewHolder extends RecyclerView.ViewHolder
 {
 
-    public TextView txtOrderId, txtOrderStatus, txtOrderPhone, txtAddress;
+    public TextView txtOrderId, txtOrderStatus, txtOrderPhone, txtAddress,txtDate;
     public Button btnEdit,btnRemove,btnDetail,btnDirection;
 
 
@@ -25,6 +25,7 @@ public class OrderViewHolder extends RecyclerView.ViewHolder
         txtOrderPhone = itemView.findViewById(R.id.order_phone);
         txtOrderStatus = itemView.findViewById(R.id.order_status);
         txtAddress = itemView.findViewById(R.id.order_address);
+        txtDate = itemView.findViewById(R.id.order_date);
 
         btnEdit = itemView.findViewById(R.id.btnEdit);
         btnRemove = itemView.findViewById(R.id.btnRemove);

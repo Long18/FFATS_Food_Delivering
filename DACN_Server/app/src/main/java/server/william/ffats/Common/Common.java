@@ -8,6 +8,9 @@ import android.graphics.Paint;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import java.util.Calendar;
+import java.util.Locale;
+
 import server.william.ffats.Model.Request;
 import server.william.ffats.Model.User;
 import server.william.ffats.Remote.APIService;
@@ -79,5 +82,12 @@ public class Common {
             }
         }
         return false;
+    }
+
+    public static String getDate(long time){
+        Calendar calendar = Calendar.getInstance(Locale.ENGLISH);
+        calendar.setTimeInMillis(time);
+        StringBuilder date = new StringBuilder(android.text.format.DateFormat.format("dd-MM-yyyy HH:mm",calendar).toString());
+        return date.toString();
     }
 }

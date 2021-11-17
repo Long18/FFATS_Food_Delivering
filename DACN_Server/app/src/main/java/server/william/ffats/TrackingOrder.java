@@ -7,22 +7,30 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -31,16 +39,23 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.GeoPoint;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -58,15 +73,24 @@ public class TrackingOrder extends FragmentActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
+    FloatingActionButton fab;
+
     private GoogleMap mMap;
     private ActivityTrackingOrderBinding binding;
 
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 7000;
     private final static int LOCATION_PERMISSION_REQUEST = 7001;
 
-    private Location mLastLocation;
+    Location mLastLocation;
     private GoogleApiClient mGoogleApiClient;
-    private LocationRequest mLocationRequest;
+    //private LocationRequest mLocationRequest;
+
+    FusedLocationProviderClient fusedLocationProviderClient;
+    LocationCallback locationCallback;
+    LocationRequest locationRequest;
+
+    double latitude;
+    double longitude;
 
     private static int UPDATE_INTERVAL = 5000;
     private static int FAST_INTERVAL = 3000;
@@ -85,14 +109,20 @@ public class TrackingOrder extends FragmentActivity implements
         sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
         userInformation = sessionManager.getInfomationUser();
 
+        fab = findViewById(R.id.fab_map);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //getlocation();
+                builLocationCallBack();
+            }
+
+        });
+
 //        binding = ActivityTrackingOrderBinding.inflate(getLayoutInflater());
 //        setContentView(binding.getRoot());
-
-
-        if (mGoogleApiClient != null){
-            mGoogleApiClient.connect();
-            return;
-        }
 
         mService = Common.getGeoCodeService();
 
@@ -107,10 +137,13 @@ public class TrackingOrder extends FragmentActivity implements
 
                 createLocationRequest();
                 buildGoogleApiClient();
+                builLocationCallBack();
+
+                fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
             }
         }
 
-        displayLocation();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -119,7 +152,51 @@ public class TrackingOrder extends FragmentActivity implements
 
     }
 
-    private void displayLocation() {
+
+    private void builLocationCallBack() {
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                Location LastLocation = locationResult.getLastLocation();
+
+                Toast.makeText(TrackingOrder.this, LastLocation.getLatitude() + "," +LastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+
+                if (LastLocation != null) {
+                    latitude = LastLocation.getLatitude();
+                    longitude = LastLocation.getLongitude();
+
+                    //Marker your location and move
+                    LatLng yourLocation = new LatLng(latitude, longitude);
+                    mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
+                    mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+
+                    if (ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    mMap.setMyLocationEnabled(true);
+
+                    //Add Marker for Order and draw route
+                    drawRoute(yourLocation,getLocationFromAddress(TrackingOrder.this,Common.currentRequest.getAddress()));
+
+
+                } else {
+                    Toast.makeText(TrackingOrder.this, "Couldn't get the location", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        };
+    }
+
+    /*private void displayLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -139,78 +216,103 @@ public class TrackingOrder extends FragmentActivity implements
                 LatLng yourLocation = new LatLng(latitude, longitude);
                 mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(15),2000,null);
+                mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
 
                 //Add Marker for Order and draw route
-                drawRoute(yourLocation,Common.currentRequest.getAddress());
-            }else {
+                drawRoute(yourLocation, Common.currentRequest.getAddress());
+            } else {
                 Toast.makeText(TrackingOrder.this, "Couldn't get the location", Toast.LENGTH_SHORT).show();
             }
         }
+    }*/
+
+    public LatLng getLocationFromAddress(Context context,String strAddress) {
+
+        Geocoder coder = new Geocoder(context);
+        List<Address> address;
+        LatLng p1 = null;
+
+        try {
+            // May throw an IOException
+            address = coder.getFromLocationName(strAddress, 5);
+            if (address == null) {
+                return null;
+            }
+
+            Address location = address.get(0);
+            p1 = new LatLng(location.getLatitude(), location.getLongitude() );
+
+        } catch (IOException ex) {
+
+            ex.printStackTrace();
+        }
+
+        return p1;
     }
 
-    private void drawRoute(LatLng yourLocation, String address) {
-        mService.getGeoCode(address).enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                try {
-                    JSONObject jsonObject = new JSONObject(response.body().toString());
+    private void drawRoute(LatLng yourLocation, LatLng latlon) {
+//        mService.getGeoCode(address).enqueue(new Callback<String>() {
+//            @Override
+//            public void onResponse(Call<String> call, Response<String> response) {
+//                try {
+//                    JSONObject jsonObject = new JSONObject(response.body().toString());
+//
+//                    String lat = ((JSONArray) jsonObject.get("results"))
+//                            .getJSONObject(0)
+//                            .getJSONObject("geometry")
+//                            .getJSONObject("location")
+//                            .get("lat").toString();
+//
+//                    String lng = ((JSONArray) jsonObject.get("results"))
+//                            .getJSONObject(0)
+//                            .getJSONObject("geometry")
+//                            .getJSONObject("location")
+//                            .get("lng").toString();
+//
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<String> call, Throwable t) {
+//
+//            }
+//        });
 
-                    String lat = ((JSONArray) jsonObject.get("results"))
-                            .getJSONObject(0)
-                            .getJSONObject("geometry")
-                            .getJSONObject("location")
-                            .get("lat").toString();
+        LatLng orderLocation = new LatLng(latlon.latitude,latlon.longitude);
 
-                    String lng = ((JSONArray) jsonObject.get("results"))
-                            .getJSONObject(0)
-                            .getJSONObject("geometry")
-                            .getJSONObject("location")
-                            .get("lng").toString();
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.package_filled);
+        bitmap = Common.scaleBitmap(bitmap, 70, 70);
 
-                    LatLng orderLocation = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
+        MarkerOptions marker = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+                .title("Order of " + userInformation.get(SessionManager.KEY_FULLNAME))
+                .position(orderLocation);
+        mMap.addMarker(marker);
 
-                    Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.package_filled);
-                    bitmap = Common.scaleBitmap(bitmap, 70, 70);
+        //draw route
+        mService.getDirections(yourLocation.latitude + "," + yourLocation.longitude,
+                orderLocation.latitude + "," + orderLocation.longitude)
+                .enqueue(new Callback<String>() {
+                    @Override
+                    public void onResponse(Call<String> call, Response<String> response) {
+                        new TrackingOrder.ParserTask().execute(response.body().toString());
+                    }
 
-                    MarkerOptions marker = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(bitmap))
-                            .title("Order of " +  userInformation.get(SessionManager.KEY_FULLNAME))
-                            .position(orderLocation);
-                    mMap.addMarker(marker);
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
 
-                    //draw route
-                    mService.getDirections(yourLocation.latitude + "," + yourLocation.longitude,
-                            orderLocation.latitude + "," + orderLocation.longitude)
-                            .enqueue(new Callback<String>() {
-                                @Override
-                                public void onResponse(Call<String> call, Response<String> response) {
-                                    new TrackingOrder.ParserTask().execute(response.body().toString());
-                                }
+                    }
+                });
 
-                                @Override
-                                public void onFailure(Call<String> call, Throwable t) {
-
-                                }
-                            });
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {
-
-            }
-        });
     }
 
     private void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(FAST_INTERVAL);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-        mLocationRequest.setSmallestDisplacement(DISPLACEMENT);
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(UPDATE_INTERVAL);
+        locationRequest.setFastestInterval(FAST_INTERVAL);
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        locationRequest.setSmallestDisplacement(DISPLACEMENT);
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -238,22 +340,23 @@ public class TrackingOrder extends FragmentActivity implements
 //                            });
 //                        }
                     }
+
                     @Override
-                    public void onConnectionSuspended( int i ){
+                    public void onConnectionSuspended(int i) {
                     }
 
                 })
                 .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
-                    public void onConnectionFailed( ConnectionResult connectionResult ){
-                        if( connectionResult.hasResolution() ){
+                    public void onConnectionFailed(ConnectionResult connectionResult) {
+                        if (connectionResult.hasResolution()) {
                             try {
                                 // Start an Activity that tries to resolve the error
                                 connectionResult.startResolutionForResult(TrackingOrder.this, PLAY_SERVICES_RESOLUTION_REQUEST);
-                            }catch( IntentSender.SendIntentException e ){
+                            } catch (IntentSender.SendIntentException e) {
                                 e.printStackTrace();
                             }
-                        }else{
+                        } else {
                             Toast.makeText(TrackingOrder.this, "bug", Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -296,7 +399,23 @@ public class TrackingOrder extends FragmentActivity implements
                         buildGoogleApiClient();
                         createLocationRequest();
 
-                        displayLocation();
+                        //displayLocation();
+                        builLocationCallBack();
+
+                        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
+                            return;
+                        }
+                        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+                    }else {
+                        Toast.makeText(TrackingOrder.this, "Error", Toast.LENGTH_SHORT).show();
                     }
                 }
                 break;
@@ -309,7 +428,7 @@ public class TrackingOrder extends FragmentActivity implements
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        displayLocation();
+        builLocationCallBack();
         startLocationUpdate();
     }
 
@@ -323,7 +442,7 @@ public class TrackingOrder extends FragmentActivity implements
         }
         LocationServices
                 .FusedLocationApi
-                .requestLocationUpdates(mGoogleApiClient,mLocationRequest,this);
+                .requestLocationUpdates(mGoogleApiClient,locationRequest,this);
     }
 
     protected void stopLocationUpdates() {
@@ -343,7 +462,8 @@ public class TrackingOrder extends FragmentActivity implements
     @Override
     public void onLocationChanged(@NonNull Location location) {
         mLastLocation = location;
-        displayLocation();
+        //displayLocation();
+        builLocationCallBack();
     }
 
     @Override
@@ -369,6 +489,7 @@ public class TrackingOrder extends FragmentActivity implements
 
     private class ParserTask extends AsyncTask<String,Integer,List<List<HashMap<String,String>>>> {
         ProgressDialog mDialog = new ProgressDialog(TrackingOrder.this);
+        private Polyline _currentPolyline;
 
         @Override
         protected void onPreExecute() {
@@ -397,11 +518,14 @@ public class TrackingOrder extends FragmentActivity implements
         protected void onPostExecute(List<List<HashMap<String, String>>> lists) {
             mDialog.dismiss();
 
-            ArrayList points = null;
+
+            hideRoute();
+
+            ArrayList<LatLng> points = null;
             PolylineOptions polylineOptions =null;
 
             for (int i = 0; i < lists.size(); i++){
-                points = new ArrayList();
+                points = new ArrayList<LatLng>();
                 polylineOptions = new PolylineOptions();
 
                 List<HashMap<String,String>> path = lists.get(i);
@@ -411,7 +535,7 @@ public class TrackingOrder extends FragmentActivity implements
 
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat,lng);
+                    LatLng position = new LatLng(lat, lng);
 
                     points.add(position);
                 }
@@ -420,8 +544,18 @@ public class TrackingOrder extends FragmentActivity implements
                 polylineOptions.color(Color.RED);
                 polylineOptions.geodesic(true);
             }
-            mMap.addPolyline(polylineOptions);
+            //_currentPolyline = mMap.addPolyline(polylineOptions);
+        }
+
+        public void hideRoute()
+        {
+            if (_currentPolyline != null)
+            {
+                _currentPolyline.remove();
+            }
         }
     }
+
+
 
 }

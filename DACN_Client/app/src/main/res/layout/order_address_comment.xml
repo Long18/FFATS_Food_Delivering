@@ -13,13 +13,20 @@
             android:layout_height="wrap_content"
             android:padding="16dp">
 
-            <fragment
-                android:id="@+id/fragment_address"
-                android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+            <com.rengwuxian.materialedittext.MaterialEditText
+                android:id="@+id/edtAddress"
+                android:hint="Address"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-            </fragment>
+                android:layout_height="wrap_content"
+                android:textColorHint="@color/colorPrimary"
+                android:text=""
+                android:textColor="@color/colorPrimary"
+                android:textSize="18sp"
+                android:inputType="textMultiLine"
+                app:met_baseColor="@color/colorPrimary"
+                app:met_floatingLabel="highlight"
+                app:met_primaryColor="@color/colorPrimary"
+                app:met_singleLineEllipsis="true"/>
 
             <com.rengwuxian.materialedittext.MaterialEditText
                 android:id="@+id/edtComment"
@@ -29,7 +36,7 @@
                 android:textColorHint="@color/colorPrimary"
                 android:text=""
                 android:textColor="@color/colorPrimary"
-                android:textSize="34sp"
+                android:textSize="18sp"
                 android:inputType="textMultiLine"
                 app:met_baseColor="@color/colorPrimary"
                 app:met_floatingLabel="highlight"

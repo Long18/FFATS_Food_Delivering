@@ -207,8 +207,6 @@ public class Home extends AppCompatActivity
 
     }
 
-
-
     private void insertData() {
 
 
