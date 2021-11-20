@@ -1,17 +1,24 @@
 package client.william.ffats;
 
+import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -38,7 +45,6 @@ import client.william.ffats.Common.Common;
 import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Remote.LocationResolver;
 import io.paperdb.Paper;
-
 
 public class MainActivity extends AppCompatActivity {
     //region Declare Variable
@@ -78,18 +84,20 @@ public class MainActivity extends AppCompatActivity {
 
         insertData();
         viewConstructor();
-
         printKeyHash(MainActivity.this);
 
     }
 
     private void insertData() {
-        mLocationResolver = new LocationResolver(this);
-        mLocationResolver.isLocationPermissionEnabled();
-        mLocationResolver.checkPermissionLocation(MainActivity.this);
-
         db = FirebaseDatabase.getInstance();
         table_user = db.getReference("user");
+
+        if (ActivityCompat.checkSelfPermission(this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION)!= PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
+            showDialog();
+        }
     }
 
     private void viewConstructor() {
@@ -122,8 +130,25 @@ public class MainActivity extends AppCompatActivity {
     //endregion
 
     //region Function
+    public void showDialog() {
+        final Dialog allowPermission = new Dialog(MainActivity.this, R.style.df_dialog);
+        allowPermission.setContentView(R.layout.dialog_location);
 
-        //region Get KeyHash
+        allowPermission.findViewById(R.id.btnAllowAccess).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (allowPermission != null && allowPermission.isShowing()) {
+                    allowPermission.dismiss();
+                }
+                mLocationResolver = new LocationResolver(MainActivity.this);
+                mLocationResolver.isLocationPermissionEnabled();
+                mLocationResolver.checkPermissionLocation(MainActivity.this);
+            }
+        });
+        allowPermission.show();
+    }
+
+    //region Get KeyHash
     public static String printKeyHash(Activity context) {
         PackageInfo packageInfo;
         String key = null;

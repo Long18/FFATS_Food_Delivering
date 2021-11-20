@@ -1,7 +1,9 @@
 package client.william.ffats;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -34,7 +36,10 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.squareup.picasso.Picasso;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
@@ -60,6 +65,7 @@ import client.william.ffats.Remote.LocationResolver;
 import client.william.ffats.Service.ListenOrder;
 import client.william.ffats.ViewHolder.MenuViewHolder;
 import io.paperdb.Paper;
+
 
 
 public class Home extends AppCompatActivity
@@ -271,6 +277,7 @@ public class Home extends AppCompatActivity
     //endregion
 
     //region Function
+
     private void loadSlider() {
         mSlider = findViewById(R.id.slider);
         images_list = new HashMap<>();
