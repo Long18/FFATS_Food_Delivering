@@ -21,4 +21,13 @@
     <string name="facebook_app_id">435206154792265</string>
     <string name="facebook_login_protocol_name">fb435206154792265</string>
     <string name="fb_login_protocol_scheme">fb435206154792265</string>
+
+    <!--    Tutorial    -->
+    <string name="first_slide_title">Shop from your favorite restaurant</string>
+    <string name="second_slide_title">Quick delivery to your doorstep</string>
+    <string name="third_slide_title">Convenience e-wallet app connecting</string>
+
+    <string name="first_slide_desc">A diverse list of different dining restaurants throughout the territory and around your area carefully selected</string>
+    <string name="second_slide_desc">We have a dynamic and professional delivery team that is professionally and intelligent ly trained</string>
+    <string name="third_slide_desc">A diverse list of different dining restaurants throughout the territory and around your area carefully selected</string>
 </resources>
