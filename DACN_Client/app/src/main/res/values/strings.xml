@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">FFATS</string>
     <string name="ffats_places">AIzaSyDh4_jZf4TOBFC9lJhuS4AAKNVO6tLGRVY</string>
-    <string name="slogan">Here iss my slogannnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn</string>
+    <string name="topSlogan">A wonderful serenity taken possenssion</string>
+    <string name="slogan">I am alone, and feel the charm of existence in this spot, which has created for the bliss</string>
     <string name="text_signup">Keep your phone we will texted you a verification code to your phone number</string>
     <string name="text_otp">We texted you a verification code to your phone number: </string>
     <string name="text_resetPassword">Keep your phone, we will texted you a verification code to your phone number</string>

@@ -21,11 +21,21 @@ public class SessionManager {
     public static final String KEY_PASSWORD = "password";
     public static final String KEY_DATE = "date";
     public static final String KEY_GENDER = "gender";
+    public static final String KEY_CITY = "Biên Hoà";
 
     public SessionManager(Context mContext, String sessionName) {
         context = mContext;
         userSession = context.getSharedPreferences(sessionName, Context.MODE_PRIVATE);
         editor = userSession.edit();
+    }
+
+    public void createLocation(String city) {
+        editor.putBoolean(IS_LOGIN, true);
+
+        editor.putString(KEY_CITY, city);
+
+        editor.commit();
+
     }
 
     public void createLoginSession(String name, String phone, String password) {
@@ -46,6 +56,7 @@ public class SessionManager {
         userData.put(KEY_FULLNAME, userSession.getString(KEY_FULLNAME, null));
         userData.put(KEY_PHONENUMBER, userSession.getString(KEY_PHONENUMBER, null));
         userData.put(KEY_PASSWORD, userSession.getString(KEY_PASSWORD, null));
+        userData.put(KEY_CITY, userSession.getString(KEY_CITY, null));
 
         return userData;
     }
@@ -68,6 +79,7 @@ public class SessionManager {
         editor.putString(KEY_PASSWORD, null);
         editor.putString(KEY_DATE, null);
         editor.putString(KEY_GENDER, null);
+        editor.putString(KEY_CITY, null);
 
         userSession.getBoolean(IS_LOGIN,false);
 

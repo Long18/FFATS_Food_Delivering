@@ -1,14 +1,26 @@
 package client.william.ffats.Account;
 
+import static com.google.android.gms.location.LocationServices.API;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -18,6 +30,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,13 +47,20 @@ import com.google.firebase.database.ValueEventListener;
 import com.hbb20.CountryCodePicker;
 import com.rey.material.widget.CheckBox;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Home;
+import client.william.ffats.MainActivity;
 import client.william.ffats.R;
+import client.william.ffats.Remote.LocationResolver;
 import io.paperdb.Paper;
 
-public class Sign_In extends AppCompatActivity {
+public class Sign_In extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener {
     //region Declare Variable
     TextInputEditText editPhone, edtPassword;
     Button btnSignIn;
@@ -41,6 +68,23 @@ public class Sign_In extends AppCompatActivity {
     TextView txtResetPassword,txtCreateAccount;
 
     CountryCodePicker countryNumber;
+
+    public String location;
+    Geocoder geocoder;
+    List<Address> addresses;
+    LocationCallback locationCallback;
+    LocationResolver mLocationResolver;
+    GoogleApiClient mGoogleApiClient;
+    LocationRequest locationRequest;
+    FusedLocationProviderClient fusedLocationProviderClient;
+
+    private static final int LOCATION_REQUEST = 7777;
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 7000;
+    private static final int LOCATION_PERMISSION_REQUEST = 7007;
+
+    private static final int UPDATE_INTERVAL = 5000;
+    private static final int FASTEST_INTERVAL = 3000;
+    private static final int DISPLCAEMENT = 10;
 
     boolean phoneCheck = false;
     boolean passCheck = false;
@@ -158,6 +202,8 @@ public class Sign_In extends AppCompatActivity {
 
         Paper.init(this);
 
+        getRecentLocation();
+
         editPhone = findViewById(R.id.txtEditTextPhone);
         edtPassword = findViewById(R.id.txtEditTextPassword);
         countryNumber = findViewById(R.id.countryNumber);
@@ -230,12 +276,172 @@ public class Sign_In extends AppCompatActivity {
         txtResetPassword.setOnClickListener(onClickListener);
         txtCreateAccount.setOnClickListener(onClickListener);
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            getRecentLocation();
+        } else {
+            if (checkPlayServices()) {
+
+                createLocationRequest();
+                buildGoogleApiClient();
+                checkPermissionLocation();
+                getRecentLocation();
+                fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+            }
+        }
+
     }
     //endregion
 
     //region Function
     public void Register(View View) {
         startActivity(new Intent(Sign_In.this, Sign_Up.class));
+    }
+
+    public void getRecentLocation(){
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(@NonNull LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                Location LastLocation = locationResult.getLastLocation();
+
+                if (LastLocation != null) {
+
+                    try {
+                        geocoder = new Geocoder(Sign_In.this, Locale.getDefault());
+                        addresses = geocoder.getFromLocation(LastLocation.getLatitude(),LastLocation.getLongitude(),1);
+
+
+                        double latitude = LastLocation.getLatitude();
+                        double longitude = LastLocation.getLongitude();
+
+                        location = addresses.get(0).getAddressLine(1);
+                        SessionManager sessionManager = new SessionManager(Sign_In.this, SessionManager.SESSION_USER);
+                        sessionManager.createLocation(addresses.get(0).getAdminArea());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
+                } else {
+                }
+            }
+
+        };
+    }
+
+    @Override
+    public void onLocationChanged(@NonNull Location location) {
+
+    }
+
+    private void createLocationRequest() {
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(UPDATE_INTERVAL);
+        locationRequest.setFastestInterval(FASTEST_INTERVAL);
+        locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        locationRequest.setSmallestDisplacement(DISPLCAEMENT);
+    }
+
+    private boolean checkPlayServices() {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                Toast.makeText(this, "This device is not support", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(Sign_In.this)
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle bundle) {
+                        if (ActivityCompat.checkSelfPermission(Sign_In.this, Manifest.permission.ACCESS_FINE_LOCATION)
+                                != PackageManager.PERMISSION_GRANTED
+                                && ActivityCompat.checkSelfPermission(Sign_In.this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                                != PackageManager.PERMISSION_GRANTED) {
+
+                            return;
+                        }
+
+                    }
+
+                    @Override
+                    public void onConnectionSuspended(int i) {
+                    }
+
+                })
+                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult connectionResult) {
+                        if (connectionResult.hasResolution()) {
+                            try {
+                                // Start an Activity that tries to resolve the error
+                                connectionResult.startResolutionForResult(Sign_In.this, PLAY_SERVICES_RESOLUTION_REQUEST);
+                            } catch (IntentSender.SendIntentException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            Toast.makeText(Sign_In.this, "bug", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                })
+                .addApi(API)
+                .build();
+
+        mGoogleApiClient.connect();
+    }
+
+    private void checkPermissionLocation() {
+        if (ActivityCompat.checkSelfPermission(Sign_In.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(Sign_In.this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            }, LOCATION_REQUEST);
+        } else {
+            if (checkPlayServices()) {
+
+                createLocationRequest();
+                buildGoogleApiClient();
+            }
+        }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
     //endregion
 

@@ -1,12 +1,15 @@
 package client.william.ffats;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -20,13 +23,31 @@ public class Menu extends AppCompatActivity {
     //region Declare Variable
     TextView txtLogout,txtFullName;
     LinearLayout lnlFavorites, lnlAddress, lnlPayment, lnlPromote, lnlOrder, lnlSupport, lnlSetting;
+    ImageView btnDarkMode,btnAvata;
 
     SessionManager sessionManager;
     HashMap<String, String> userInformation;
 
+    SharedPreferences sharedPreferences;
+    Boolean isNightMode;
+
+
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            //region Darkmode
+            if (v.getId() == R.id.ic_darkmode) {
+
+                if (isNightMode){
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                    btnDarkMode.setImageResource(R.drawable.nights_stay_on);
+                }else {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                    btnDarkMode.setImageResource(R.drawable.nights_stay_off);
+                }
+
+            }
+            //endregion
             //region Fav
             if (v.getId() == R.id.lnl_fav) {
                 Intent openMenu = new Intent(Menu.this, FavoritesActivity.class);
@@ -113,6 +134,9 @@ public class Menu extends AppCompatActivity {
         sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
         userInformation = sessionManager.getInfomationUser();
 
+        sharedPreferences = getSharedPreferences("Darkmode",0);
+        isNightMode = sharedPreferences.getBoolean("Nightmode",false);
+
         lnlFavorites = findViewById(R.id.lnl_fav);
         lnlAddress = findViewById(R.id.lnl_address);
         lnlPayment = findViewById(R.id.lnl_payment);
@@ -122,6 +146,9 @@ public class Menu extends AppCompatActivity {
         lnlSetting = findViewById(R.id.lnl_setting);
         txtLogout = findViewById(R.id.txtLogout);
         txtFullName = findViewById(R.id.txtFullName);
+        btnDarkMode = findViewById(R.id.ic_darkmode);
+        btnAvata = findViewById(R.id.img_avata);
+
 
         txtFullName.setText(userInformation.get(SessionManager.KEY_FULLNAME));
 
@@ -133,6 +160,8 @@ public class Menu extends AppCompatActivity {
         lnlSupport.setOnClickListener(onClickListener);
         lnlSetting.setOnClickListener(onClickListener);
         txtLogout.setOnClickListener(onClickListener);
+        btnDarkMode.setOnClickListener(onClickListener);
+        btnAvata.setOnClickListener(onClickListener);
 
 
     }

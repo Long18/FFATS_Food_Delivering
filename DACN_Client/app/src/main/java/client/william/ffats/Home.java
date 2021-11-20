@@ -73,7 +73,7 @@ public class Home extends AppCompatActivity
     //region Declare Variable
     FirebaseDatabase database;
     DatabaseReference category;
-    TextView TextFullName,txtSeeMore;
+    TextView txtCity;
     RecyclerView recycler_menu;
     RecyclerView.LayoutManager linearLayoutManager;
     FirebaseRecyclerAdapter<Category, MenuViewHolder> adapter;
@@ -134,6 +134,7 @@ public class Home extends AppCompatActivity
         userInformation = sessionManager.getInfomationUser();
 
         btnMenu = findViewById(R.id.ic_menu);
+        txtCity = findViewById(R.id.txtCity);
 
         btnMenu.setOnClickListener(onClickListener);
         /*Toolbar toolbar = findViewById(R.id.toolbar);
@@ -167,6 +168,8 @@ public class Home extends AppCompatActivity
             }
         });
 
+        txtCity.setText(userInformation.get(SessionManager.KEY_CITY));
+        //txtCity.setText(MainActivity);
 //        TextFullName.setText(userInformation.get(SessionManager.KEY_FULLNAME));
 
 
