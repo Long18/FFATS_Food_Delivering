@@ -2,6 +2,7 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/restaurant_item"
     android:layout_width="match_parent"
     android:layout_height="200dp"
     android:layout_margin="10dp"
@@ -14,20 +15,20 @@
 
 
         <ImageView
-            android:id="@+id/menu_image"
+            android:id="@+id/res_image"
             android:scaleType="centerCrop"
             android:src="@drawable/wait"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
         <TextView
-            android:id="@+id/menu_name"
+            android:id="@+id/res_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:background="@color/overlayBackground"
             android:gravity="center"
-            android:text="Tên Menu"
+            android:text="Tên Hàng Quán"
             android:textColor="@color/black"
             android:textSize="20sp" />
 

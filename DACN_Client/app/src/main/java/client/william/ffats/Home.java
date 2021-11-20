@@ -8,8 +8,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,6 +73,8 @@ public class Home extends AppCompatActivity
     FirebaseRecyclerAdapter<Category, MenuViewHolder> adapter;
     CardView cardSearch;
 
+    ImageView btnMenu;
+
     SwipeRefreshLayout swipeRefreshLayout;
     CounterFab fab;
 
@@ -94,6 +98,14 @@ public class Home extends AppCompatActivity
             }
             //endregion
 
+            //region Menu
+            if (v.getId() == R.id.ic_menu){
+                Intent openMenu = new Intent(Home.this, client.william.ffats.Menu.class);
+                startActivity(openMenu);
+
+            }
+            //endregion
+
         }
     };
     //endregion
@@ -102,6 +114,7 @@ public class Home extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_home);
 
         insertData();
@@ -114,17 +127,20 @@ public class Home extends AppCompatActivity
         sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
         userInformation = sessionManager.getInfomationUser();
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("Menu");
-        setSupportActionBar(toolbar);
+        btnMenu = findViewById(R.id.ic_menu);
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        btnMenu.setOnClickListener(onClickListener);
+        /*Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("Menu");
+        setSupportActionBar(toolbar);*/
+
+        /*DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setNavigationItemSelectedListener(this);*/
 
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(onClickListener);
@@ -132,9 +148,9 @@ public class Home extends AppCompatActivity
 
 
         //set name for user
-        View headerView = navigationView.getHeaderView(0);
-        TextFullName = headerView.findViewById(R.id.txtFullName);
-        txtSeeMore = headerView.findViewById(R.id.txtSeeMore);
+        //View headerView = navigationView.getHeaderView(0);
+        //TextFullName = headerView.findViewById(R.id.txtFullName);
+        //txtSeeMore = headerView.findViewById(R.id.txtSeeMore);
 
         cardSearch = findViewById(R.id.card_search);
         cardSearch.setOnClickListener(new View.OnClickListener() {
@@ -145,7 +161,7 @@ public class Home extends AppCompatActivity
             }
         });
 
-        TextFullName.setText(userInformation.get(SessionManager.KEY_FULLNAME));
+//        TextFullName.setText(userInformation.get(SessionManager.KEY_FULLNAME));
 
 
         // Load menu
@@ -259,7 +275,7 @@ public class Home extends AppCompatActivity
         mSlider = findViewById(R.id.slider);
         images_list = new HashMap<>();
 
-        final DatabaseReference slider = database.getReference("Banner");
+        final DatabaseReference slider = database.getReference("Restaurants").child(Common.resSelected).child("detail").child("Banner");
 
         slider.addValueEventListener(new ValueEventListener() {
             @Override

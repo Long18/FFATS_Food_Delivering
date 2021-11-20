@@ -31,6 +31,12 @@
         android:theme="@style/Theme.FFATS.NoActionBar"
         tools:replace="android:theme,android:icon">
         <activity
+            android:name=".Menu"
+            android:exported="false" />
+        <activity
+            android:name=".RestaurantList"
+            android:exported="false" />
+        <activity
             android:name=".FavoritesActivity"
             android:exported="false" />
         <activity

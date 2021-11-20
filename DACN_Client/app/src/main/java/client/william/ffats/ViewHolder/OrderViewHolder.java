@@ -1,6 +1,7 @@
 package client.william.ffats.ViewHolder;
 
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,12 +15,15 @@ public class OrderViewHolder extends RecyclerView.ViewHolder implements View.OnC
 
     private ItemClickListener itemClickListener;
 
+    public ImageView btn_delete;
+
     public OrderViewHolder(View itemView) {
         super(itemView);
         txtOrderId = (TextView)itemView.findViewById(R.id.order_id);
         txtOrderPhone = (TextView)itemView.findViewById(R.id.order_phone);
         txtOrderStatus = (TextView)itemView.findViewById(R.id.order_status);
         txtAddress = (TextView)itemView.findViewById(R.id.order_address);
+        btn_delete = (ImageView)itemView.findViewById(R.id.btn_delete);
 
         itemView.setOnClickListener(this);
     }

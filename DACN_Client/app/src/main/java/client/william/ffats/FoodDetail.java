@@ -105,7 +105,7 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
 
     private void viewConstructor() {
         database = FirebaseDatabase.getInstance();
-        foods = database.getReference("Foods");
+        foods = database.getReference("Restaurants").child(Common.resSelected).child("detail").child("Foods");
         ratingDB = database.getReference("Rating");
 
         numberButton = findViewById(R.id.number_button);

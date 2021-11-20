@@ -11,12 +11,18 @@ import java.util.HashMap;
 import java.util.List;
 
 public class DirectionJSONParser {
+
+    /**
+     * Receives a JSONObject and returns a list of lists containing latitude and longitude
+     */
     public List<List<HashMap<String, String>>> parse(JSONObject jObject) {
 
         List<List<HashMap<String, String>>> routes = new ArrayList<List<HashMap<String, String>>>();
         JSONArray jRoutes = null;
         JSONArray jLegs = null;
         JSONArray jSteps = null;
+
+
 
         try {
 

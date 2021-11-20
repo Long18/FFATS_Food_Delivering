@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
 import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Interface.ItemClickListener;
@@ -110,7 +111,7 @@ public class Search extends AppCompatActivity {
     private void getData() {
         //DB
         database = FirebaseDatabase.getInstance();
-        foodList = database.getReference("Foods");
+        foodList = database.getReference("Restaurants").child(Common.resSelected).child("detail").child("Foods");
         localDB = new Database(this);
         //Facebook
         callbackManager = CallbackManager.Factory.create();
