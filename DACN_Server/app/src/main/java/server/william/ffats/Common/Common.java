@@ -20,6 +20,8 @@ import server.william.ffats.Remote.RetrofitClient;
 
 
 public class Common {
+    public static String resSelected = "";
+
     public static User currentUser;
     public static Request currentRequest;
 

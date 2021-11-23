@@ -19,6 +19,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
+import server.william.ffats.Common.Common;
 import server.william.ffats.Database.Database;
 import server.william.ffats.Model.Food;
 import server.william.ffats.Model.Order;
@@ -44,7 +45,7 @@ public class FoodDetail extends AppCompatActivity {
         setContentView(R.layout.activity_food_detail);
 
         database = FirebaseDatabase.getInstance();
-        foods = database.getReference("Foods");
+        foods = database.getReference("Restaurants").child(Common.resSelected).child("detail").child("Foods");
 
         numberButton = findViewById(R.id.number_button);
         btnCart = findViewById(R.id.btnCart);

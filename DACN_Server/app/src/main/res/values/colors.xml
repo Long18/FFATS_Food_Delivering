@@ -26,4 +26,7 @@
     <color name="btnSignInActive">#0E70E3</color>
 
 
+    <color name="transparent">#A89A9999</color>
+
+
 </resources>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dialogParent"
+    style="@style/df_dialog_layout">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="10dp"
+        android:gravity="center"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="16dp">
+
+        <LinearLayout
+            android:id="@+id/topInternet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:orientation="vertical">
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="400dp"
+                android:layout_marginTop="-100dp"
+                android:layout_gravity="center"
+                android:src="@drawable/location_permission" />
+
+            <TextView
+                style="@style/homeHeading"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:text="Location permission"
+                android:textColor="@color/black"
+                android:textSize="25sp" />
+
+            <TextView
+                android:id="@+id/spinAndWinReward"
+                style="@style/learnhubTitleText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="Allow location access to know your address and provide the best experience"
+                android:textSize="14dp"
+                android:textStyle="normal" />
+
+
+            <Button
+                android:id="@+id/btnAllowAccess"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/primary_button2"
+                android:gravity="center"
+                android:text="Allow access"
+                android:textColor="@color/colorPrimary" />
+
+
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
+</LinearLayout>

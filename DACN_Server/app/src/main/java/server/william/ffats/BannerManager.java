@@ -77,7 +77,7 @@ public class BannerManager extends AppCompatActivity {
 
     private void getData() {
         database = FirebaseDatabase.getInstance();
-        banners = database.getReference("Banner");
+        banners = database.getReference("Restaurants").child(Common.resSelected).child("detail").child("Banner");
         storage = FirebaseStorage.getInstance();
         storageReference = storage.getReference();
     }

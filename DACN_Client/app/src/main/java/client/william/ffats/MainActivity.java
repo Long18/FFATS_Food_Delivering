@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 Location LastLocation = locationResult.getLastLocation();
-                
+
                 if (LastLocation != null) {
 
                     try {

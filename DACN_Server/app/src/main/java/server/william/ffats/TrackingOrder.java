@@ -77,6 +77,7 @@ public class TrackingOrder extends FragmentActivity implements
     private ActivityTrackingOrderBinding binding;
 
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 7000;
+    private static final int LOCATION_REQUEST = 7777;
     private final static int LOCATION_PERMISSION_REQUEST = 7001;
 
     Location mLastLocation;
@@ -120,14 +121,30 @@ public class TrackingOrder extends FragmentActivity implements
     private void viewConstructor() {
         fab = findViewById(R.id.fab_map);
 
-        createLocationRequest();
-        createLocationCallBack();
+        if (ActivityCompat.checkSelfPermission(TrackingOrder.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(TrackingOrder.this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            }, LOCATION_REQUEST);
+            createLocationRequest();
+            buildGoogleApiClient();
+        } else {
+            if (checkPlayServices()) {
+                createLocationRequest();
+                createLocationCallBack();
+                fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
+                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
 
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
+            }
         }
-        fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
+
+
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -320,7 +337,6 @@ public class TrackingOrder extends FragmentActivity implements
                         });
             }
         }
-
 
     }
 
@@ -567,8 +583,8 @@ public class TrackingOrder extends FragmentActivity implements
     @Override
     protected void onStop() {
         super.onStop();
-        mGoogleApiClient.disconnect();
-        stopLocationUpdates();
+//        mGoogleApiClient.disconnect();
+        //stopLocationUpdates();
     }
 
     @Override
@@ -651,22 +667,36 @@ public class TrackingOrder extends FragmentActivity implements
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-            @Override
-            public void onSuccess(Location location) {
-                mLastLocation = location;
+        if (ActivityCompat.checkSelfPermission(TrackingOrder.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(TrackingOrder.this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            }, LOCATION_REQUEST);
 
-                LatLng yourLocation = new LatLng(location.getLatitude(),location.getLongitude());
+            createLocationRequest();
+            buildGoogleApiClient();
 
-                mCurrentMarker = mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f), 2000, null);
+        } else {
+            if (checkPlayServices()) {
 
+                fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        mLastLocation = location;
+
+                        LatLng yourLocation = new LatLng(location.getLatitude(),location.getLongitude());
+
+                        mCurrentMarker = mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f), 2000, null);
+
+                    }
+                });
             }
-        });
+        }
 
         /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
