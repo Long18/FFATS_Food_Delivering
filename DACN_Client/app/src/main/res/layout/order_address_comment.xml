@@ -43,6 +43,11 @@
                 app:met_primaryColor="@color/colorPrimary"
                 app:met_singleLineEllipsis="true"/>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delivery method:"/>
+
             <RadioGroup
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -54,6 +59,26 @@
                 <RadioButton
                     android:id="@+id/rdbHomeAdress"
                     android:text="Ship to my Home"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </RadioGroup>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Payment method:"/>
+
+            <RadioGroup
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <RadioButton
+                    android:id="@+id/rdbCash"
+                    android:text="Cash"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <RadioButton
+                    android:id="@+id/rdbMomoPayment"
+                    android:text="Momo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
             </RadioGroup>

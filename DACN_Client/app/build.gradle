@@ -96,6 +96,9 @@ dependencies {
     implementation 'com.facebook.android:facebook-share:latest.release'
     implementation 'com.facebook.android:facebook-android-sdk:latest.release'
 
+    //Momo
+    implementation 'com.github.momo-wallet:mobile-sdk:1.0.7'
+
     //Etc
     implementation 'com.hbb20:ccp:2.3.1'
     implementation 'com.chaos.view:pinview:1.4.4'

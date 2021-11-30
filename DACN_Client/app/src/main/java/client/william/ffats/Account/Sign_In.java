@@ -276,13 +276,13 @@ public class Sign_In extends AppCompatActivity implements GoogleApiClient.Connec
         txtResetPassword.setOnClickListener(onClickListener);
         txtCreateAccount.setOnClickListener(onClickListener);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
             getRecentLocation();
         } else {
             if (checkPlayServices()) {
-
                 createLocationRequest();
                 buildGoogleApiClient();
                 checkPermissionLocation();

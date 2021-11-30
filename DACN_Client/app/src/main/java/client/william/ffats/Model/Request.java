@@ -3,13 +3,13 @@ package client.william.ffats.Model;
 import java.util.List;
 
 public class Request {
-    private String phone,name,address,total,status,comment,latLng;
+    private String phone,name,address,total,status,comment,latLng,paymentMethod;
     private List<Order> foods;
 
     public Request() {
     }
 
-    public Request(String phone, String name, String address, String total, String status, String comment, List<Order> foods) {
+    public Request(String phone, String name, String address, String total, String status, String comment,String paymentMethod, List<Order> foods) {
         this.phone = phone;
         this.name = name;
         this.address = address;
@@ -17,19 +17,16 @@ public class Request {
         this.status = status;
         //If status is 0:Placed, 1:Shipping, 2:Shipped.
         this.comment = comment;
+        this.paymentMethod = paymentMethod;
         this.foods = foods;
     }
 
-    public Request(String phone, String name, String address, String total, String status, String comment, String latLng, List<Order> foods) {
-        this.phone = phone;
-        this.name = name;
-        this.address = address;
-        this.total = total;
-        this.status = status;
-        //If status is 0:Placed, 1:Shipping, 2:Shipped.
-        this.comment = comment;
-        this.latLng = latLng;
-        this.foods = foods;
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
     public String getPhone() {

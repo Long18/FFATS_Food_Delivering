@@ -23,6 +23,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -76,6 +77,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import client.william.ffats.Common.Common;
 import client.william.ffats.Database.Database;
@@ -95,11 +97,12 @@ import client.william.ffats.ViewHolder.CartAdapter;
 import client.william.ffats.ViewHolder.CartViewHolder;
 import retrofit2.Call;
 import retrofit2.Callback;
+import vn.momo.momo_partner.AppMoMoLib;
 
 public class Cart extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener, RecyclerItemTouchListener {
+        LocationListener, RecyclerItemTouchListener{
     //region Declare Variable
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
@@ -110,7 +113,7 @@ public class Cart extends AppCompatActivity implements
     public TextView txtTotalPrice;
     Button btnPlace;
 
-    RadioButton rdbToAddress, rdbToHome;
+    RadioButton rdbToAddress, rdbToHome,rdbCash,rdbMomo;
 
     List<Order> cart = new ArrayList<>();
     CartAdapter adapter;
@@ -157,6 +160,15 @@ public class Cart extends AppCompatActivity implements
 
     private LocationResolver mLocationResolver;
 
+    private String amount = "10000";
+    private String fee = "0";
+    int environment = 0;//developer default
+    private String merchantName = "FFATS";
+    private String merchantCode = "MOMOISIA20211130";
+    private String merchantNameLabel = "Nhà cung cấp";
+    private String description = "Thanh toán dịch vụ FFAST";
+    String orderNumber;
+
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -177,7 +189,7 @@ public class Cart extends AppCompatActivity implements
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             //region rdbShiptoAddress
-            if (buttonView.getId() == R.id.rdbHomeAdress) {
+            if (buttonView.getId() == R.id.rdbShipToAdress) {
                 if (isChecked) {
                     edtAddress.setText(location);
                 }
@@ -185,6 +197,8 @@ public class Cart extends AppCompatActivity implements
             //endregion
         }
     };
+
+
     //endregion
 
     //region Activity Function
@@ -250,9 +264,9 @@ public class Cart extends AppCompatActivity implements
         new ItemTouchHelper(iSimpleCallback).attachToRecyclerView(recyclerView);
     }
 
-
-
     private void insertData() {
+        AppMoMoLib.getInstance().setEnvironment(AppMoMoLib.ENVIRONMENT.DEVELOPMENT);
+
         checkPermissionLocation();
         // Firebase
         database = FirebaseDatabase.getInstance();
@@ -265,6 +279,90 @@ public class Cart extends AppCompatActivity implements
     //endregion
 
     //region Function
+
+    //Get token through MoMo app
+    private void requestPayment() {
+        AppMoMoLib.getInstance().setAction(AppMoMoLib.ACTION.PAYMENT);
+        AppMoMoLib.getInstance().setActionType(AppMoMoLib.ACTION_TYPE.GET_TOKEN);
+        if (txtTotalPrice.getText().toString() != null && txtTotalPrice.getText().toString().trim().length() != 0)
+            amount = txtTotalPrice.getText().toString().trim();
+
+        Map<String, Object> eventValue = new HashMap<>();
+        //client Required
+        eventValue.put("FFATS", merchantName); //Tên đối tác. được đăng ký tại https://business.momo.vn. VD: Google, Apple, Tiki , CGV Cinemas
+        eventValue.put("merchantcode", merchantCode); //Mã đối tác, được cung cấp bởi MoMo tại https://business.momo.vn
+        eventValue.put("amount", txtTotalPrice.getText().toString()); //Kiểu integer
+        eventValue.put("orderId", orderNumber); //uniqueue id cho Bill order, giá trị duy nhất cho mỗi đơn hàng
+        eventValue.put("orderLabel", "Mã đơn hàng"); //gán nhãn
+
+        //client Optional - bill info
+        eventValue.put("merchantnamelabel", "Dịch vụ");//gán nhãn
+        eventValue.put("fee", txtTotalPrice.getText().toString()); //Kiểu integer
+        eventValue.put("description", description); //mô tả đơn hàng - short description
+
+        //client extra data
+        eventValue.put("requestId",  merchantCode+"merchant_billId_"+System.currentTimeMillis());
+        eventValue.put("partnerCode", merchantCode);
+        //Example extra data
+        JSONObject objExtraData = new JSONObject();
+        try {
+            objExtraData.put("site_code", "008");
+            objExtraData.put("site_name", "CGV Cresent Mall");
+            objExtraData.put("screen_code", 0);
+            objExtraData.put("screen_name", "Special");
+            objExtraData.put("movie_name", "Kẻ Trộm Mặt Trăng 3");
+            objExtraData.put("movie_format", "2D");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        eventValue.put("extraData", objExtraData.toString());
+
+        eventValue.put("extra", "");
+        AppMoMoLib.getInstance().requestMoMoCallBack(this, eventValue);
+
+
+    }
+    //Get token callback from MoMo app an submit to server side
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == AppMoMoLib.getInstance().REQUEST_CODE_MOMO && resultCode == -1) {
+            if(data != null) {
+                if(data.getIntExtra("status", -1) == 0) {
+                    //TOKEN IS AVAILABLE
+                    Toast.makeText(Cart.this,"Get token " + data.getStringExtra("message"),Toast.LENGTH_SHORT).show();
+                    String token = data.getStringExtra("data"); //Token response
+                    String phoneNumber = data.getStringExtra("phonenumber");
+                    String env = data.getStringExtra("env");
+                    if(env == null){
+                        env = "app";
+                    }
+
+                    if(token != null && !token.equals("")) {
+                        // TODO: send phoneNumber & token to your server side to process payment with MoMo server
+                        // IF Momo topup success, continue to process your order
+                    } else {
+                        Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info),Toast.LENGTH_SHORT).show();
+                    }
+                } else if(data.getIntExtra("status", -1) == 1) {
+                    //TOKEN FAIL
+                    String message = data.getStringExtra("message") != null?data.getStringExtra("message"):"Thất bại";
+                    Toast.makeText(Cart.this,"message: " + message,Toast.LENGTH_SHORT).show();
+                } else if(data.getIntExtra("status", -1) == 2) {
+                    //TOKEN FAIL
+                    Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info),Toast.LENGTH_SHORT).show();
+                } else {
+                    //TOKEN FAIL
+                    Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info),Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info),Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info_err),Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
     private void showAlertDialog() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(Cart.this);
         alertDialog.setTitle("One more Step!");
@@ -290,9 +388,13 @@ public class Cart extends AppCompatActivity implements
 
         rdbToHome = (RadioButton) order_address.findViewById(R.id.rdbHomeAdress);
         rdbToAddress = (RadioButton) order_address.findViewById(R.id.rdbShipToAdress);
+        rdbCash = (RadioButton) order_address.findViewById(R.id.rdbCash);
+        rdbMomo = (RadioButton) order_address.findViewById(R.id.rdbMomoPayment);
 
         rdbToAddress.setOnCheckedChangeListener(onCheckedChangeListener);
         rdbToHome.setOnCheckedChangeListener(onCheckedChangeListener);
+        rdbCash.setOnCheckedChangeListener(onCheckedChangeListener);
+        rdbMomo.setOnCheckedChangeListener(onCheckedChangeListener);
 
         alertDialog.setIcon(R.drawable.shopping_basket);
 
@@ -302,13 +404,14 @@ public class Cart extends AppCompatActivity implements
         alertDialog.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Request request = new Request(
+                /*Request request = new Request(
                         userInformation.get(SessionManager.KEY_PHONENUMBER),
                         userInformation.get(SessionManager.KEY_FULLNAME),
                         edtAddress.getText().toString(),
                         txtTotalPrice.getText().toString(),
                         "0",
                         edtComment.getText().toString(),
+                        "momo",
                         cart
                 );
                 // Submit to firebase
@@ -317,17 +420,80 @@ public class Cart extends AppCompatActivity implements
                 requests.child(orderNumber).setValue(request);
                 //deleting cart
                 new Database(getBaseContext()).cleanCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
-
-                sendNotification(orderNumber);
-                Intent home = new Intent(Cart.this, Home.class);
-                Toast.makeText(Cart.this, "Thank You! Order Place", Toast.LENGTH_SHORT).show();
-                startActivity(home);
-                finish();
+*/
 
 //                //remove fragment
 //                getFragmentManager().beginTransaction().remove(
 //                        getFragmentManager().findFragmentById(R.id.fragment_address))
 //                        .commit();
+
+                if (!rdbToAddress.isChecked() && !rdbToHome.isChecked()){
+                    if (edtAddress.getText() != null){
+                        edtAddress.setText(location);
+                    }else {
+                        Toast.makeText(Cart.this, "Please enter address!",Toast.LENGTH_SHORT).show();
+
+                        return;
+                    }
+                }
+
+                if (!rdbCash.isChecked() && !rdbMomo.isChecked()){
+
+                    Toast.makeText(Cart.this, "Please select payment method!",Toast.LENGTH_SHORT).show();
+                    return;
+
+                }else if (rdbMomo.isChecked()){
+                    Request request = new Request(
+                            userInformation.get(SessionManager.KEY_PHONENUMBER),
+                            userInformation.get(SessionManager.KEY_FULLNAME),
+                            edtAddress.getText().toString(),
+                            txtTotalPrice.getText().toString(),
+                            "0",
+                            edtComment.getText().toString(),
+                            "Momo",
+                            cart
+                    );
+                    // Submit to firebase
+                    //we will using System.Current to key
+                    orderNumber = String.valueOf(System.currentTimeMillis());
+                    requests.child(orderNumber).setValue(request);
+                    //deleting cart
+                    new Database(getBaseContext()).cleanCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
+
+
+                    requestPayment();
+
+                    sendNotification(orderNumber);
+                    Intent home = new Intent(Cart.this, Home.class);
+                    Toast.makeText(Cart.this, "Thank You! Order Place", Toast.LENGTH_SHORT).show();
+                    startActivity(home);
+                    finish();
+
+                }else if (rdbCash.isChecked()){
+                    Request request = new Request(
+                            userInformation.get(SessionManager.KEY_PHONENUMBER),
+                            userInformation.get(SessionManager.KEY_FULLNAME),
+                            edtAddress.getText().toString(),
+                            txtTotalPrice.getText().toString(),
+                            "0",
+                            edtComment.getText().toString(),
+                            "Cash",
+                            cart
+                    );
+                    // Submit to firebase
+                    //we will using System.Current to key
+                    String orderNumber = String.valueOf(System.currentTimeMillis());
+                    requests.child(orderNumber).setValue(request);
+                    //deleting cart
+                    new Database(getBaseContext()).cleanCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
+                    sendNotification(orderNumber);
+                    Intent home = new Intent(Cart.this, Home.class);
+                    Toast.makeText(Cart.this, "Thank You! Order Place", Toast.LENGTH_SHORT).show();
+                    startActivity(home);
+                    finish();
+                }
+
+
             }
         });
         alertDialog.setNegativeButton("NO", new DialogInterface.OnClickListener() {
