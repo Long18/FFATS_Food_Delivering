@@ -77,6 +77,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
                 <RadioButton
+                    android:id="@+id/rdbZaloPay"
+                    android:text="Zalo Pay"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <RadioButton
                     android:id="@+id/rdbMomoPayment"
                     android:text="Momo"
                     android:layout_width="match_parent"

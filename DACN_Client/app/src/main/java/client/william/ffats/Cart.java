@@ -23,6 +23,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -95,14 +96,20 @@ import client.william.ffats.Remote.IGoogleService;
 import client.william.ffats.Remote.LocationResolver;
 import client.william.ffats.ViewHolder.CartAdapter;
 import client.william.ffats.ViewHolder.CartViewHolder;
+import client.william.ffats.ZaloPayment.AppInfo;
+import client.william.ffats.ZaloPayment.CreateOrder;
 import retrofit2.Call;
 import retrofit2.Callback;
 import vn.momo.momo_partner.AppMoMoLib;
+import vn.zalopay.sdk.Environment;
+import vn.zalopay.sdk.ZaloPayError;
+import vn.zalopay.sdk.ZaloPaySDK;
+import vn.zalopay.sdk.listeners.PayOrderListener;
 
 public class Cart extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
-        LocationListener, RecyclerItemTouchListener{
+        LocationListener, RecyclerItemTouchListener {
     //region Declare Variable
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
@@ -113,7 +120,7 @@ public class Cart extends AppCompatActivity implements
     public TextView txtTotalPrice;
     Button btnPlace;
 
-    RadioButton rdbToAddress, rdbToHome,rdbCash,rdbMomo;
+    RadioButton rdbToAddress, rdbToHome, rdbCash, rdbMomo, rdbZaloPay;
 
     List<Order> cart = new ArrayList<>();
     CartAdapter adapter;
@@ -160,7 +167,7 @@ public class Cart extends AppCompatActivity implements
 
     private LocationResolver mLocationResolver;
 
-    private String amount = "10000";
+    private String amount;
     private String fee = "0";
     int environment = 0;//developer default
     private String merchantName = "FFATS";
@@ -192,6 +199,13 @@ public class Cart extends AppCompatActivity implements
             if (buttonView.getId() == R.id.rdbShipToAdress) {
                 if (isChecked) {
                     edtAddress.setText(location);
+                }
+            }
+            //endregion
+            //region rdbShiptoAddress
+            if (buttonView.getId() == R.id.rdbZaloPay) {
+                if (isChecked) {
+                    zaloPayment();
                 }
             }
             //endregion
@@ -265,7 +279,13 @@ public class Cart extends AppCompatActivity implements
     }
 
     private void insertData() {
+        StrictMode.ThreadPolicy policy = new
+                StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
         AppMoMoLib.getInstance().setEnvironment(AppMoMoLib.ENVIRONMENT.DEVELOPMENT);
+        ZaloPaySDK.tearDown();
+        ZaloPaySDK.init(AppInfo.APP_ID, Environment.SANDBOX);
 
         checkPermissionLocation();
         // Firebase
@@ -280,7 +300,7 @@ public class Cart extends AppCompatActivity implements
 
     //region Function
 
-    //Get token through MoMo app
+    // region Get token through MoMo app
     private void requestPayment() {
         AppMoMoLib.getInstance().setAction(AppMoMoLib.ACTION.PAYMENT);
         AppMoMoLib.getInstance().setActionType(AppMoMoLib.ACTION_TYPE.GET_TOKEN);
@@ -301,7 +321,7 @@ public class Cart extends AppCompatActivity implements
         eventValue.put("description", description); //mô tả đơn hàng - short description
 
         //client extra data
-        eventValue.put("requestId",  merchantCode+"merchant_billId_"+System.currentTimeMillis());
+        eventValue.put("requestId", merchantCode + "merchant_billId_" + System.currentTimeMillis());
         eventValue.put("partnerCode", merchantCode);
         //Example extra data
         JSONObject objExtraData = new JSONObject();
@@ -322,45 +342,47 @@ public class Cart extends AppCompatActivity implements
 
 
     }
+
     //Get token callback from MoMo app an submit to server side
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == AppMoMoLib.getInstance().REQUEST_CODE_MOMO && resultCode == -1) {
-            if(data != null) {
-                if(data.getIntExtra("status", -1) == 0) {
+        if (requestCode == AppMoMoLib.getInstance().REQUEST_CODE_MOMO && resultCode == -1) {
+            if (data != null) {
+                if (data.getIntExtra("status", -1) == 0) {
                     //TOKEN IS AVAILABLE
-                    Toast.makeText(Cart.this,"Get token " + data.getStringExtra("message"),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Cart.this, "Get token " + data.getStringExtra("message"), Toast.LENGTH_SHORT).show();
                     String token = data.getStringExtra("data"); //Token response
                     String phoneNumber = data.getStringExtra("phonenumber");
                     String env = data.getStringExtra("env");
-                    if(env == null){
+                    if (env == null) {
                         env = "app";
                     }
 
-                    if(token != null && !token.equals("")) {
+                    if (token != null && !token.equals("")) {
                         // TODO: send phoneNumber & token to your server side to process payment with MoMo server
                         // IF Momo topup success, continue to process your order
                     } else {
-                        Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info),Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Cart.this, "message: " + this.getString(R.string.not_receive_info), Toast.LENGTH_SHORT).show();
                     }
-                } else if(data.getIntExtra("status", -1) == 1) {
+                } else if (data.getIntExtra("status", -1) == 1) {
                     //TOKEN FAIL
-                    String message = data.getStringExtra("message") != null?data.getStringExtra("message"):"Thất bại";
-                    Toast.makeText(Cart.this,"message: " + message,Toast.LENGTH_SHORT).show();
-                } else if(data.getIntExtra("status", -1) == 2) {
+                    String message = data.getStringExtra("message") != null ? data.getStringExtra("message") : "Thất bại";
+                    Toast.makeText(Cart.this, "message: " + message, Toast.LENGTH_SHORT).show();
+                } else if (data.getIntExtra("status", -1) == 2) {
                     //TOKEN FAIL
-                    Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Cart.this, "message: " + this.getString(R.string.not_receive_info), Toast.LENGTH_SHORT).show();
                 } else {
                     //TOKEN FAIL
-                    Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(Cart.this, "message: " + this.getString(R.string.not_receive_info), Toast.LENGTH_SHORT).show();
                 }
             } else {
-                Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info),Toast.LENGTH_SHORT).show();
+                Toast.makeText(Cart.this, "message: " + this.getString(R.string.not_receive_info), Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(Cart.this,"message: " + this.getString(R.string.not_receive_info_err),Toast.LENGTH_SHORT).show();
+            Toast.makeText(Cart.this, "message: " + this.getString(R.string.not_receive_info_err), Toast.LENGTH_SHORT).show();
         }
     }
+    //endregion
 
 
     private void showAlertDialog() {
@@ -390,11 +412,13 @@ public class Cart extends AppCompatActivity implements
         rdbToAddress = (RadioButton) order_address.findViewById(R.id.rdbShipToAdress);
         rdbCash = (RadioButton) order_address.findViewById(R.id.rdbCash);
         rdbMomo = (RadioButton) order_address.findViewById(R.id.rdbMomoPayment);
+        rdbZaloPay = (RadioButton) order_address.findViewById(R.id.rdbZaloPay);
 
         rdbToAddress.setOnCheckedChangeListener(onCheckedChangeListener);
         rdbToHome.setOnCheckedChangeListener(onCheckedChangeListener);
         rdbCash.setOnCheckedChangeListener(onCheckedChangeListener);
         rdbMomo.setOnCheckedChangeListener(onCheckedChangeListener);
+        rdbZaloPay.setOnCheckedChangeListener(onCheckedChangeListener);
 
         alertDialog.setIcon(R.drawable.shopping_basket);
 
@@ -404,45 +428,19 @@ public class Cart extends AppCompatActivity implements
         alertDialog.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                /*Request request = new Request(
-                        userInformation.get(SessionManager.KEY_PHONENUMBER),
-                        userInformation.get(SessionManager.KEY_FULLNAME),
-                        edtAddress.getText().toString(),
-                        txtTotalPrice.getText().toString(),
-                        "0",
-                        edtComment.getText().toString(),
-                        "momo",
-                        cart
-                );
-                // Submit to firebase
-                //we will using System.Current to key
-                String orderNumber = String.valueOf(System.currentTimeMillis());
-                requests.child(orderNumber).setValue(request);
-                //deleting cart
-                new Database(getBaseContext()).cleanCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
-*/
-
-//                //remove fragment
-//                getFragmentManager().beginTransaction().remove(
-//                        getFragmentManager().findFragmentById(R.id.fragment_address))
-//                        .commit();
-
-                if (!rdbToAddress.isChecked() && !rdbToHome.isChecked()){
-                    if (edtAddress.getText() != null){
+                if (!rdbToAddress.isChecked() && !rdbToHome.isChecked()) {
+                    if (edtAddress.getText() != null) {
                         edtAddress.setText(location);
-                    }else {
-                        Toast.makeText(Cart.this, "Please enter address!",Toast.LENGTH_SHORT).show();
-
+                    } else {
+                        Toast.makeText(Cart.this, "Please enter address!", Toast.LENGTH_SHORT).show();
                         return;
                     }
                 }
 
-                if (!rdbCash.isChecked() && !rdbMomo.isChecked()){
-
-                    Toast.makeText(Cart.this, "Please select payment method!",Toast.LENGTH_SHORT).show();
+                if (!rdbCash.isChecked() && !rdbMomo.isChecked() && !rdbZaloPay.isChecked()) {
+                    Toast.makeText(Cart.this, "Please select payment method!", Toast.LENGTH_SHORT).show();
                     return;
-
-                }else if (rdbMomo.isChecked()){
+                } else if (rdbMomo.isChecked()) {
                     Request request = new Request(
                             userInformation.get(SessionManager.KEY_PHONENUMBER),
                             userInformation.get(SessionManager.KEY_FULLNAME),
@@ -460,7 +458,6 @@ public class Cart extends AppCompatActivity implements
                     //deleting cart
                     new Database(getBaseContext()).cleanCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
 
-
                     requestPayment();
 
                     sendNotification(orderNumber);
@@ -469,7 +466,7 @@ public class Cart extends AppCompatActivity implements
                     startActivity(home);
                     finish();
 
-                }else if (rdbCash.isChecked()){
+                } else if (rdbCash.isChecked()) {
                     Request request = new Request(
                             userInformation.get(SessionManager.KEY_PHONENUMBER),
                             userInformation.get(SessionManager.KEY_FULLNAME),
@@ -491,6 +488,27 @@ public class Cart extends AppCompatActivity implements
                     Toast.makeText(Cart.this, "Thank You! Order Place", Toast.LENGTH_SHORT).show();
                     startActivity(home);
                     finish();
+                } else if (rdbZaloPay.isChecked()) {
+                    Request request = new Request(
+                            userInformation.get(SessionManager.KEY_PHONENUMBER),
+                            userInformation.get(SessionManager.KEY_FULLNAME),
+                            edtAddress.getText().toString(),
+                            txtTotalPrice.getText().toString(),
+                            "0",
+                            edtComment.getText().toString(),
+                            "Zalo Payment",
+                            cart
+                    );
+                    // Submit to firebase
+                    //we will using System.Current to key
+
+                    Intent home = new Intent(Cart.this, Home.class);
+                    orderNumber = String.valueOf(System.currentTimeMillis());
+                    requests.child(orderNumber).setValue(request);
+                    amount = txtTotalPrice.getText().toString();
+                    ZaloPaySDK.getInstance().onResult(home);
+                    zaloPayment();
+
                 }
 
 
@@ -510,6 +528,80 @@ public class Cart extends AppCompatActivity implements
         alertDialog.show();
 
     }
+
+    private void zaloPayment() {
+        CreateOrder orderApi = new CreateOrder();
+        try {
+
+            JSONObject data = orderApi.createOrder(amount);
+            String token = data.getString("zptranstoken");
+            ZaloPaySDK.getInstance().payOrder(Cart.this, token, "demozpdk://app", new PayOrderListener() {
+                @Override
+                public void onPaymentSucceeded(final String transactionId, final String transToken, final String appTransID) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AlertDialog.Builder(Cart.this)
+                                    .setTitle("Payment Success")
+                                    .setMessage(String.format("TransactionId: %s - TransToken: %s", transactionId, transToken))
+                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                        }
+                                    })
+                                    .setNegativeButton("Cancel", null).show();
+                        }
+
+                    });
+                    sendNotification(orderNumber);
+                    Toast.makeText(Cart.this, "Thank You! Order Place", Toast.LENGTH_SHORT).show();
+
+                    finish();
+                }
+
+                @Override
+                public void onPaymentCanceled(String zpTransToken, String appTransID) {
+                    new AlertDialog.Builder(Cart.this)
+                            .setTitle("User Cancel Payment")
+                            .setMessage(String.format("zpTransToken: %s \n", zpTransToken))
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //deleting cart
+                                    new Database(getBaseContext()).cleanCart(userInformation.get(SessionManager.KEY_PHONENUMBER));
+                                    sendNotification(orderNumber);
+                                    Intent home = new Intent(Cart.this, Home.class);
+                                    Toast.makeText(Cart.this, "Your Payment was Cancel", Toast.LENGTH_SHORT).show();
+                                    startActivity(home);
+                                    finish();
+                                }
+                            })
+                            .setNegativeButton("Cancel", null).show();
+                    sendNotification(orderNumber);
+                    Toast.makeText(Cart.this, "Thank You! Order Place", Toast.LENGTH_SHORT).show();
+
+                    finish();
+                }
+
+                @Override
+                public void onPaymentError(ZaloPayError zaloPayError, String zpTransToken, String appTransID) {
+                    new AlertDialog.Builder(Cart.this)
+                            .setTitle("Payment Fail")
+                            .setMessage(String.format("ZaloPayErrorCode: %s \nTransToken: %s", zaloPayError.toString(), zpTransToken))
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                }
+                            })
+                            .setNegativeButton("Cancel", null).show();
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 //    private void setupPlaceAutocomplete() {
 //        //MaterialEditText fragment_address = order_address.findViewById(R.id.edtAdress);
@@ -767,7 +859,7 @@ public class Cart extends AppCompatActivity implements
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mLocationResolver.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode){
+        switch (requestCode) {
             case LOCATION_PERMISSION_REQUEST:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     if (checkPlayServices()) {
@@ -798,13 +890,11 @@ public class Cart extends AppCompatActivity implements
                 super.onLocationResult(locationResult);
                 Location LastLocation = locationResult.getLastLocation();
 
-                Toast.makeText(Cart.this, LastLocation.getLatitude() + "," +LastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
-
                 if (LastLocation != null) {
 
                     try {
                         geocoder = new Geocoder(Cart.this, Locale.getDefault());
-                        addresses = geocoder.getFromLocation(LastLocation.getLatitude(),LastLocation.getLongitude(),1);
+                        addresses = geocoder.getFromLocation(LastLocation.getLatitude(), LastLocation.getLongitude(), 1);
 
 
                         double latitude = LastLocation.getLatitude();
@@ -839,7 +929,7 @@ public class Cart extends AppCompatActivity implements
 
             return;
         } else {
-            FusedLocationApi.requestLocationUpdates(mGoogleApiClient,locationRequest,this);
+            FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
         }
     }
 
@@ -849,5 +939,10 @@ public class Cart extends AppCompatActivity implements
         //displayLocation();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        ZaloPaySDK.getInstance().onResult(intent);
+    }
     //endregion
 }
