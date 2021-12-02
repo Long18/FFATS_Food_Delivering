@@ -1,11 +1,14 @@
 package server.william.ffats.Model;
 
+import server.william.ffats.Maps.Node;
+
 public class Order {
     private String ProductId;
     private String ProductName;
     private String Quantity;
     private String Price;
     private String Discount;
+
 
     public Order() {
     }
@@ -17,6 +20,8 @@ public class Order {
         Price = price;
         Discount = discount;
     }
+
+
 
     public String getProductId() {
         return ProductId;

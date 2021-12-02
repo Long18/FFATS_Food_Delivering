@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 
 import java.util.HashMap;
 
+import server.william.ffats.Maps.MapValue;
+
 public class SessionManager {
     SharedPreferences userSession;
     SharedPreferences.Editor editor;
@@ -12,6 +14,8 @@ public class SessionManager {
 
     public static final String SESSION_USER = "userLoginSession";
     private static final String IS_LOGIN = "UserIsLogin";
+
+    public static MapValue MAP_VALUE;
 
     //User Store Information
     public static final String KEY_FULLNAME = "name";

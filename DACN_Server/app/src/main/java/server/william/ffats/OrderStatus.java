@@ -1,9 +1,16 @@
 package server.william.ffats;
 
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,11 +22,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,10 +38,18 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 
+import java.io.IOException;
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import server.william.ffats.Common.Common;
+import server.william.ffats.Database.SessionManager;
 import server.william.ffats.Interface.ItemClickListener;
+import server.william.ffats.Maps.Dijkstra;
+import server.william.ffats.Maps.GraphConstructor;
+import server.william.ffats.Maps.MapValue;
+import server.william.ffats.Maps.XML_reading;
 import server.william.ffats.Model.Notification;
 import server.william.ffats.Model.Request;
 import server.william.ffats.Model.Response;
@@ -50,6 +69,8 @@ public class OrderStatus extends AppCompatActivity {
 
     MaterialSpinner spinner;
 
+    FusedLocationProviderClient fusedLocationProviderClient;
+
     APIService mService;
 
     @Override
@@ -68,6 +89,7 @@ public class OrderStatus extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
+        LoadMapData();
         loadOrder();
 
     }
@@ -133,6 +155,127 @@ public class OrderStatus extends AppCompatActivity {
         adapter.notifyDataSetChanged();
         recyclerView.setAdapter(adapter);
 
+    }
+
+    public void LoadMapData() {
+        SessionManager.MAP_VALUE  = new MapValue();
+        AssetManager assetManager = getAssets();
+        Thread th = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                // reading map data from xml to listWay and listNode
+                Log.e("readXml", "run: " + GraphConstructor.getTimeToString());
+                XML_reading.readXml(getAssets(), "map.osm", SessionManager.MAP_VALUE);
+                Log.e("readXml", "run: " + GraphConstructor.getTimeToString());
+
+                // remove Node that not contain any way
+                GraphConstructor.removeBlankNode(SessionManager.MAP_VALUE.getNodes());
+
+                // calculate vertices and graph
+                Log.e("graphConstruction", "run: " + GraphConstructor.getTimeToString());
+                GraphConstructor.graphConstructor(SessionManager.MAP_VALUE);
+                Log.e("graphConstruction", "run: " + GraphConstructor.getTimeToString());
+
+                // count node
+
+
+                // get address
+
+
+                //set view
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // chay het adapter roi set btn sang maps activity thanh visible
+                        FirebaseRecyclerOptions<Request> options =
+                                new FirebaseRecyclerOptions.Builder<Request>()
+                                        .setQuery(requests, Request.class)
+                                        .build();
+                        adapter = new FirebaseRecyclerAdapter<Request, OrderViewHolder>(options) {
+                            @Override
+                            protected void onBindViewHolder(@NonNull OrderViewHolder holder, int position, @NonNull Request model) {
+                                holder.btnDirection.setEnabled(true);
+
+                                holder.txtOrderId.setText(adapter.getRef(position).getKey());
+                                holder.txtOrderStatus.setText(Common.convertCodeToStatus(model.getStatus()));
+                                holder.txtAddress.setText(model.getAddress());
+                                holder.txtOrderPhone.setText(model.getPhone());
+                                holder.txtDate.setText("Date: " + Common.getDate(Long.parseLong(adapter.getRef(position).getKey())));
+
+                                holder.btnEdit.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        showUpdateDialog(adapter.getRef(position).getKey(),adapter.getItem(position));
+                                    }
+                                });
+
+                                holder.btnRemove.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        deleteOrder(adapter.getRef(position).getKey());
+                                    }
+                                });
+
+                                holder.btnDetail.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Intent orderDetail = new Intent(OrderStatus.this, OrderDetail.class);
+                                        Common.currentRequest = model;
+                                        orderDetail.putExtra("OrderId",adapter.getRef(position).getKey());
+                                        startActivity(orderDetail);
+                                    }
+                                });
+
+                                holder.btnDirection.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        Intent trackingOrder = new Intent(OrderStatus.this, TrackingOrder.class);
+                                        Common.currentRequest = model;
+                                        startActivity(trackingOrder);
+                                    }
+                                });
+                            }
+
+                            @NonNull
+                            @Override
+                            public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.order_layout, parent, false);
+                                    return new OrderViewHolder(view);
+                            }
+                        };
+                        adapter.startListening();
+                        adapter.notifyDataSetChanged();
+                        recyclerView.setAdapter(adapter);
+                    }
+                });
+            }
+        });
+        th.start();
+    }
+
+    public LatLng getLocationFromAddress(Context context, String strAddress) {
+
+        Geocoder coder = new Geocoder(context);
+        List<Address> address;
+        LatLng p1 = null;
+
+        try {
+            // May throw an IOException
+            address = coder.getFromLocationName(strAddress, 5);
+            if (address == null) {
+                return null;
+            }
+
+            Address location = address.get(0);
+            p1 = new LatLng(location.getLatitude(), location.getLongitude());
+
+        } catch (IOException ex) {
+
+            ex.printStackTrace();
+        }
+
+        return p1;
     }
 
 

@@ -60,6 +60,11 @@ import retrofit2.Response;
 import server.william.ffats.Common.Common;
 import server.william.ffats.Common.DirectionJSONParser;
 import server.william.ffats.Database.SessionManager;
+import server.william.ffats.Maps.Dijkstra;
+import server.william.ffats.Maps.GraphConstructor;
+import server.william.ffats.Maps.MapFunction;
+import server.william.ffats.Maps.Node;
+import server.william.ffats.Maps.OrderGraphItem;
 import server.william.ffats.Model.Request;
 import server.william.ffats.Remote.IGeoCoordinates;
 import server.william.ffats.databinding.ActivityTrackingOrderBinding;
@@ -90,7 +95,7 @@ public class TrackingOrder extends FragmentActivity implements
 
     double latitude;
     double longitude;
-    private static LatLng currentLocation, guestLocation,mLocal;
+    private static LatLng currentLocation, guestLocation, mLocal;
     Marker mCurrentMarker;
     private Polyline mPolyline;
     private LatLngBounds latlngBounds;
@@ -143,7 +148,6 @@ public class TrackingOrder extends FragmentActivity implements
 
             }
         }
-
 
 
         fab.setOnClickListener(new View.OnClickListener() {
@@ -210,7 +214,7 @@ public class TrackingOrder extends FragmentActivity implements
                     mMap.setMyLocationEnabled(true);
 
                     //Add Marker for Order and draw route
-                    drawRoute(yourLocation, getLocationFromAddress(TrackingOrder.this, Common.currentRequest.getAddress()));
+                    drawRoute(getLocationFromAddress(TrackingOrder.this, Common.currentRequest.getAddress()));
 
 
                 } else {
@@ -246,10 +250,10 @@ public class TrackingOrder extends FragmentActivity implements
     }
 
     private void drawRoutee(LatLng yourLocation, Request request) {
-        if (mPolyline != null){
+        if (mPolyline != null) {
             mPolyline.remove();
         }
-        if (request.getAddress() != null && !request.getAddress().isEmpty()){
+        if (request.getAddress() != null && !request.getAddress().isEmpty()) {
             mService.getGeoCode(request.getAddress()).enqueue(new Callback<String>() {
                 @Override
                 public void onResponse(Call<String> call, Response<String> response) {
@@ -268,7 +272,7 @@ public class TrackingOrder extends FragmentActivity implements
                                 .getJSONObject("location")
                                 .get("lng").toString();
 
-                        LatLng orderLocation = new LatLng(Double.parseDouble(lat),Double.parseDouble(lng));
+                        LatLng orderLocation = new LatLng(Double.parseDouble(lat), Double.parseDouble(lng));
 
                         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.package_filled);
                         bitmap = Common.scaleBitmap(bitmap, 70, 70);
@@ -281,23 +285,24 @@ public class TrackingOrder extends FragmentActivity implements
                         guestLocation = orderLocation;
 
                         //draw route
-            mService.getDirections(yourLocation.latitude+","+yourLocation.longitude,
-                orderLocation.latitude+","+orderLocation.longitude)
-                .enqueue(new Callback<String>() {
-                    @Override
-                    public void onResponse(Call<String> call, Response<String> response) {
-                        try{
-                            new ParserTask().execute(response.body().toString());
-                        }
-                        catch(Exception e){}finally {}
+                        mService.getDirections(yourLocation.latitude + "," + yourLocation.longitude,
+                                orderLocation.latitude + "," + orderLocation.longitude)
+                                .enqueue(new Callback<String>() {
+                                    @Override
+                                    public void onResponse(Call<String> call, Response<String> response) {
+                                        try {
+                                            new ParserTask().execute(response.body().toString());
+                                        } catch (Exception e) {
+                                        } finally {
+                                        }
 
-                    }
+                                    }
 
-                    @Override
-                    public void onFailure(Call<String> call, Throwable t) {
+                                    @Override
+                                    public void onFailure(Call<String> call, Throwable t) {
 
-                    }
-                });
+                                    }
+                                });
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -309,10 +314,10 @@ public class TrackingOrder extends FragmentActivity implements
 
                 }
             });
-        }else {
-            if (request.getLatLng() != null && !request.getLatLng().isEmpty()){
+        } else {
+            if (request.getLatLng() != null && !request.getLatLng().isEmpty()) {
                 String[] latLng = request.getLatLng().split(",");
-                LatLng orderLocation = new LatLng(Double.parseDouble(latLng[0]),Double.parseDouble(latLng[1]));
+                LatLng orderLocation = new LatLng(Double.parseDouble(latLng[0]), Double.parseDouble(latLng[1]));
 
                 Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.package_filled);
                 bitmap = Common.scaleBitmap(bitmap, 70, 70);
@@ -322,8 +327,8 @@ public class TrackingOrder extends FragmentActivity implements
                         .position(orderLocation);
                 mMap.addMarker(marker);
 
-                mService.getDirections(mLastLocation.getLatitude()+","+mLastLocation.getLongitude(),
-                        orderLocation.latitude+","+orderLocation.longitude)
+                mService.getDirections(mLastLocation.getLatitude() + "," + mLastLocation.getLongitude(),
+                        orderLocation.latitude + "," + orderLocation.longitude)
                         .enqueue(new Callback<String>() {
                             @Override
                             public void onResponse(Call<String> call, Response<String> response) {
@@ -340,7 +345,7 @@ public class TrackingOrder extends FragmentActivity implements
 
     }
 
-    private void drawRoute(LatLng yourLocation, LatLng guestLatlon) {
+    private void drawRoute( LatLng guestLatlon) {
 
         //        mService.getGeoCode(address).enqueue(new Callback<String>() {
 //            @Override
@@ -383,7 +388,36 @@ public class TrackingOrder extends FragmentActivity implements
         mMap.addMarker(marker);
 
         guestLocation = orderLocation;
+        ///////////////////////////////////////////////
 
+        //orderLocation là vị trí nơi khách hàng
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                mLastLocation = location;
+                Node closestNodeForMyLocation = GraphConstructor
+                        .findClosestNode(SessionManager.MAP_VALUE.getVertices(), location.getLatitude(),location.getLongitude());
+                Node closestNodeForOrder = GraphConstructor
+                        .findClosestNode(SessionManager.MAP_VALUE.getVertices(), orderLocation.latitude,orderLocation.longitude);
+
+                Dijkstra dijkstra = new Dijkstra(SessionManager.MAP_VALUE.getMAX_length(), SessionManager.MAP_VALUE.getGraph());
+                int temp =SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForMyLocation);
+                dijkstra.runDijkstraWithPriorityQueue(temp);
+                OrderGraphItem thisOrderPath = new OrderGraphItem();
+                dijkstra.getWayForDijkstraWithPriorityQueueToGraph(SessionManager.MAP_VALUE.getVertices(),
+                        thisOrderPath,
+                        SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForOrder));
+
+                MapFunction.DrawVertexAndWay(mMap,thisOrderPath.getWayList(),closestNodeForMyLocation,closestNodeForOrder);
+            }
+        });
+
+
+        ///////////////////////////////////////////////
 
         //draw route
         /*mService.getDirections(yourLocation.latitude+","+yourLocation.longitude,
@@ -416,6 +450,7 @@ public class TrackingOrder extends FragmentActivity implements
 
                 mLocal = new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
 
+                LatLng yourLocation = new LatLng(latitude, longitude);
 
                 if (mCurrentMarker != null){
                     mCurrentMarker.setPosition(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude()));
@@ -423,7 +458,9 @@ public class TrackingOrder extends FragmentActivity implements
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude())));
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f));
 
-                    drawRoutee(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude()),Common.currentRequest);
+                    drawRoute(getLocationFromAddress(TrackingOrder.this, Common.currentRequest.getAddress()));
+
+                    //drawRoutee(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude()),Common.currentRequest);
                 }
             }
         };
@@ -697,6 +734,9 @@ public class TrackingOrder extends FragmentActivity implements
                 });
             }
         }
+        //Add Marker for Order and draw route
+        drawRoute(getLocationFromAddress(TrackingOrder.this, Common.currentRequest.getAddress()));
+
 
         /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

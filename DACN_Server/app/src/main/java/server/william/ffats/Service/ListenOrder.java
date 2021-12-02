@@ -57,8 +57,8 @@ public class ListenOrder extends Service implements ChildEventListener {
     @Override
     public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
         Request request = snapshot.getValue(Request.class);
-        if (request.getStatus().equals("0"))
-            showNotification(snapshot.getKey(),request);
+        /*if (request.getStatus().equals("0"))
+            showNotification(snapshot.getKey(),request);*/
     }
 
     private void showNotification(String key, Request request) {
