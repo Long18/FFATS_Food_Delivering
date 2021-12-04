@@ -173,15 +173,18 @@ public class FoodDetail extends AppCompatActivity implements RatingDialogListene
 
     private void showRatingDialog() {
         new AppRatingDialog.Builder()
+                .setWindowAnimation(R.style.Base_Animation_AppCompat_Tooltip)
                 .setPositiveButtonText("Submit")
                 .setNegativeButtonText("Cancel")
                 .setNoteDescriptions(Arrays
                         .asList("Very Bad","Not Good","Ok","Very Good","Excellent"))
+                .setNoteDescriptionTextColor(R.color.colorPrimary)
                 .setDefaultRating(1)
                 .setTitle("Rate this food")
                 .setDescription("Please select some starts and give your feedback")
                 .setTitleTextColor(R.color.colorPrimary)
                 .setDescriptionTextColor(R.color.colorPrimary)
+                .setStarColor(R.color.quantum_yellow)
                 .setHint("Please write your comment here...")
                 .setHintTextColor(R.color.colorAccent)
                 .setCommentTextColor(R.color.black)

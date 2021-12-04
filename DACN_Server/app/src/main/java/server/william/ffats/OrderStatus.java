@@ -177,11 +177,6 @@ public class OrderStatus extends AppCompatActivity {
                 GraphConstructor.graphConstructor(SessionManager.MAP_VALUE);
                 Log.e("graphConstruction", "run: " + GraphConstructor.getTimeToString());
 
-                // count node
-
-
-                // get address
-
 
                 //set view
                 runOnUiThread(new Runnable() {

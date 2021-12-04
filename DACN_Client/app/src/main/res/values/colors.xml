@@ -25,6 +25,8 @@
     <color name="btnSignIn">#4CAF50</color>
     <color name="btnSignInActive">#0E70E3</color>
 
+    <color name="active">#0E70E3</color>
+
     <color name="transparent">#A89A9999</color>
 
 

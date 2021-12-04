@@ -9,12 +9,14 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.HashMap;
 
+import client.william.ffats.Account.Information;
 import client.william.ffats.Database.SessionManager;
 import io.paperdb.Paper;
 
@@ -30,6 +32,8 @@ public class Menu extends AppCompatActivity {
 
     SharedPreferences sharedPreferences;
     Boolean isNightMode;
+
+    FrameLayout frlUser;
 
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -110,6 +114,14 @@ public class Menu extends AppCompatActivity {
                 startActivity(mainActivity);
 
             }
+            //endregionfrlUser
+            //region frame layout User
+            if (v.getId() == R.id.frlUser) {
+
+                Intent infor = new Intent(Menu.this, Information.class);
+                startActivity(infor);
+
+            }
             //endregion
         }
     };
@@ -146,6 +158,7 @@ public class Menu extends AppCompatActivity {
         lnlSetting = findViewById(R.id.lnl_setting);
         txtLogout = findViewById(R.id.txtLogout);
         txtFullName = findViewById(R.id.txtFullName);
+        frlUser = findViewById(R.id.frlUser);
         btnDarkMode = findViewById(R.id.ic_darkmode);
         btnAvata = findViewById(R.id.img_avata);
 
@@ -162,6 +175,7 @@ public class Menu extends AppCompatActivity {
         txtLogout.setOnClickListener(onClickListener);
         btnDarkMode.setOnClickListener(onClickListener);
         btnAvata.setOnClickListener(onClickListener);
+        frlUser.setOnClickListener(onClickListener);
 
 
     }

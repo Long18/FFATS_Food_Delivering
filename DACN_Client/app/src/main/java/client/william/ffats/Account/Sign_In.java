@@ -320,6 +320,7 @@ public class Sign_In extends AppCompatActivity implements GoogleApiClient.Connec
                         location = addresses.get(0).getAddressLine(1);
                         SessionManager sessionManager = new SessionManager(Sign_In.this, SessionManager.SESSION_USER);
                         sessionManager.createLocation(addresses.get(0).getAdminArea());
+                        sessionManager.createAddress(addresses.get(0).getAddressLine(0));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

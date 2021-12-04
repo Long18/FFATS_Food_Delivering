@@ -165,6 +165,21 @@ public class Database extends SQLiteAssetHelper {
         db.execSQL(query);
     }
 
+    public int getCountFavorites(String userPhone) {
+        int count=0;
+
+        SQLiteDatabase db = getReadableDatabase();
+        String query = String.format("SELECT COUNT(*) FROM Favorites WHERE UserPhone ='%s'", userPhone);
+        Cursor cursor = db.rawQuery(query,null);
+        if(cursor.moveToFirst())
+        {
+            do{
+                count = cursor.getInt(0);
+            }while (cursor.moveToNext());
+        }
+        return count;
+    }
+
     public boolean isFavorites(String foodId,String userPhone){
         SQLiteDatabase db = getReadableDatabase();
         String query = String.format("SELECT * FROM Favorites WHERE FoodId='%s' and UserPhone = '%s';",foodId,userPhone);

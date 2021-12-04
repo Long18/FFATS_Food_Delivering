@@ -8,6 +8,7 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
@@ -57,12 +58,14 @@ import com.google.firebase.database.ValueEventListener;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
 import client.william.ffats.Account.Sign_In;
 import client.william.ffats.Account.Sign_Up;
 import client.william.ffats.Common.Common;
+import client.william.ffats.Common.Tutorial;
 import client.william.ffats.Database.SessionManager;
 import client.william.ffats.Remote.LocationResolver;
 import io.paperdb.Paper;
@@ -86,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     LocationRequest locationRequest;
     FusedLocationProviderClient fusedLocationProviderClient;
 
+    SharedPreferences fistTime;
+
     private static final int LOCATION_REQUEST = 7777;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 7000;
     private static final int LOCATION_PERMISSION_REQUEST = 7007;
@@ -95,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int DISPLCAEMENT = 10;
 
     SessionManager sessionManager;
+    HashMap<String, String> userInformation;
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -145,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         sessionManager = new SessionManager(MainActivity.this, SessionManager.SESSION_USER);
+        userInformation = sessionManager.getInfomationUser();
         db = FirebaseDatabase.getInstance();
         table_user = db.getReference("user");
 
@@ -201,6 +208,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         location = addresses.get(0).getAddressLine(1);
 
                         sessionManager.createLocation(addresses.get(0).getAdminArea());
+
+                        fistTime = getSharedPreferences("tutorialScreen",MODE_PRIVATE);
+                        boolean isFirstTime = fistTime.getBoolean("firstTimeGetLocation",true);
+
+                        if (isFirstTime){
+                            SharedPreferences.Editor editor = fistTime.edit();
+                            editor.putBoolean("firstTimeGetLocation",false);
+                            editor.commit();
+
+                            sessionManager.createAddress(addresses.get(0).getAddressLine(0));
+                        }
+                        else {
+                            if (userInformation.get(SessionManager.KEY_ADDRESS) == "Việt Nam"){
+                                SharedPreferences.Editor editor = fistTime.edit();
+                                editor.putBoolean("firstTimeGetLocation",true);
+                                editor.commit();
+                                return;
+                            }
+                            //get address from firebase
+
+                        }
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

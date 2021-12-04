@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DatabaseReference;
@@ -35,6 +36,8 @@ public class FavoritesActivity extends AppCompatActivity implements RecyclerItem
     RecyclerView recyclerView;
     RecyclerView.LayoutManager layoutManager;
 
+    TextView txtNull;
+
     FirebaseDatabase database;
     DatabaseReference foodList;
 
@@ -60,6 +63,7 @@ public class FavoritesActivity extends AppCompatActivity implements RecyclerItem
         rootLayout = findViewById(R.id.root_layout_fav);
 
         recyclerView = findViewById(R.id.recycler_favorites);
+        txtNull = findViewById(R.id.txtNull);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
@@ -77,6 +81,13 @@ public class FavoritesActivity extends AppCompatActivity implements RecyclerItem
 
     //region Function
     private void loadFavorites() {
+        int count = new Database(this).getCountFavorites(userInformation.get(SessionManager.KEY_PHONENUMBER));
+        if (count == 1){
+            txtNull.setVisibility(View.INVISIBLE);
+        }else {
+            txtNull.setVisibility(View.VISIBLE);
+        }
+
         adapter = new FavoritesAdapter(this, new Database(this).getFavorites(userInformation.get(SessionManager.KEY_PHONENUMBER)));
         recyclerView.setAdapter(adapter);
     }
@@ -99,10 +110,12 @@ public class FavoritesActivity extends AppCompatActivity implements RecyclerItem
                 public void onClick(View v) {
                     adapter.restoreItem(deleteItem,deleteIndex);
                     new Database(getBaseContext()).addToFavorites(deleteItem);
+                    loadFavorites();
                 }
             });
             snackbar.setActionTextColor(Color.YELLOW);
             snackbar.show();
+            loadFavorites();
         }
     }
     //endregion
