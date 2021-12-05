@@ -1,5 +1,6 @@
 package client.william.ffats;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -14,18 +15,29 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
+
 import java.util.HashMap;
 
 import client.william.ffats.Account.Information;
+import client.william.ffats.Common.CircleTransform;
 import client.william.ffats.Database.SessionManager;
+import client.william.ffats.Model.Food;
+import client.william.ffats.Model.User;
 import io.paperdb.Paper;
 
 public class Menu extends AppCompatActivity {
 
     //region Declare Variable
-    TextView txtLogout,txtFullName;
+    TextView txtLogout, txtFullName;
     LinearLayout lnlFavorites, lnlAddress, lnlPayment, lnlPromote, lnlOrder, lnlSupport, lnlSetting;
-    ImageView btnDarkMode,btnAvata;
+    ImageView btnDarkMode, imgAvata;
 
     SessionManager sessionManager;
     HashMap<String, String> userInformation;
@@ -35,6 +47,11 @@ public class Menu extends AppCompatActivity {
 
     FrameLayout frlUser;
 
+    FirebaseDatabase database;
+    DatabaseReference user;
+
+    User userInfo;
+
 
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -42,10 +59,10 @@ public class Menu extends AppCompatActivity {
             //region Darkmode
             if (v.getId() == R.id.ic_darkmode) {
 
-                if (isNightMode){
+                if (isNightMode) {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                     btnDarkMode.setImageResource(R.drawable.nights_stay_on);
-                }else {
+                } else {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                     btnDarkMode.setImageResource(R.drawable.nights_stay_off);
                 }
@@ -140,14 +157,17 @@ public class Menu extends AppCompatActivity {
 
     private void insertData() {
         Paper.init(this);
+        database = FirebaseDatabase.getInstance();
+        user = database.getReference("user");
+        user.keepSynced(true);
     }
 
     private void viewConstructor() {
         sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
         userInformation = sessionManager.getInfomationUser();
 
-        sharedPreferences = getSharedPreferences("Darkmode",0);
-        isNightMode = sharedPreferences.getBoolean("Nightmode",false);
+        sharedPreferences = getSharedPreferences("Darkmode", 0);
+        isNightMode = sharedPreferences.getBoolean("Nightmode", false);
 
         lnlFavorites = findViewById(R.id.lnl_fav);
         lnlAddress = findViewById(R.id.lnl_address);
@@ -160,7 +180,7 @@ public class Menu extends AppCompatActivity {
         txtFullName = findViewById(R.id.txtFullName);
         frlUser = findViewById(R.id.frlUser);
         btnDarkMode = findViewById(R.id.ic_darkmode);
-        btnAvata = findViewById(R.id.img_avata);
+        imgAvata = findViewById(R.id.img_avata);
 
 
         txtFullName.setText(userInformation.get(SessionManager.KEY_FULLNAME));
@@ -174,10 +194,39 @@ public class Menu extends AppCompatActivity {
         lnlSetting.setOnClickListener(onClickListener);
         txtLogout.setOnClickListener(onClickListener);
         btnDarkMode.setOnClickListener(onClickListener);
-        btnAvata.setOnClickListener(onClickListener);
         frlUser.setOnClickListener(onClickListener);
+
+        showImage();
+
 
 
     }
+
+    private void showImage() {
+        Query getUser = FirebaseDatabase.getInstance().getReference("user").orderByChild("phone");
+
+        if (!(userInformation.get(SessionManager.KEY_IMAGE) == null)){
+            getUser.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String Image = snapshot.child(userInformation.get(SessionManager.KEY_PHONENUMBER)).child("image").getValue(String.class);
+                    Picasso.get().load(Image).transform(new CircleTransform())
+                            .into(imgAvata);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showImage();
+    }
+
     //endregion
 }

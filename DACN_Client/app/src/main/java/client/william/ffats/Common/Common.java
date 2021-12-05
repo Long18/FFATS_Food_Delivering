@@ -10,6 +10,7 @@ import client.william.ffats.Remote.IGoogleService;
 import client.william.ffats.Remote.RetrofitClient;
 
 public class Common {
+    public static final int CHOOSE_IMAGE_REQUEST = 18;
     public static User currentUser;
 
     private static final String BASE_URL = "https://fcm.googleapis.com/";

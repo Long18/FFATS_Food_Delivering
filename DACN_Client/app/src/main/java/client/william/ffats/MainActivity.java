@@ -332,10 +332,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             String mName = snapshot.child(phoneNo).child("name").getValue(String.class);
                             String mPhoneNo = snapshot.child(phoneNo).child("phone").getValue(String.class);
                             String mPassword = snapshot.child(phoneNo).child("password").getValue(String.class);
+                            String mImage = snapshot.child(phoneNo).child("password").getValue(String.class);
 
                             //Create Database Store
                             SessionManager sessionManager = new SessionManager(MainActivity.this, SessionManager.SESSION_USER);
-                            sessionManager.createLoginSession(mName, mPhoneNo, mPassword);
+                            sessionManager.createLoginSession(mName, mPhoneNo, mPassword,mImage);
 
                             mDialog.dismiss();
                             Toast.makeText(MainActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();

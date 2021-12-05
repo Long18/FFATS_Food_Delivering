@@ -39,7 +39,13 @@
         tools:replace="android:theme,android:icon">
         <activity
             android:name=".Account.Information"
-            android:exported="false" />
+            android:exported="true">
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+        </activity>
         <activity
             android:name=".Common.Tutorial"
             android:exported="false" />

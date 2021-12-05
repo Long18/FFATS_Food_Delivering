@@ -241,8 +241,7 @@ public class Home extends AppCompatActivity
                                 @Override
                                 public void onSuccess(Uri uri) {
                                     //Set value for new Category if image upload
-                                    newCategory = new Category(editName.getEditText().getText()
-                                    .toString(),uri.toString());
+                                    newCategory = new Category(editName.getEditText().getText().toString(),uri.toString());
                                 }
                             });
                         }
