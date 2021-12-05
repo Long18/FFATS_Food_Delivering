@@ -67,7 +67,7 @@ public class SessionManager {
 
     }
 
-    public void createLoginSession(String name, String phone, String password,String image) {
+    public void createLoginSession(String name, String phone, String password,String image,String address,String email) {
 
         editor.putBoolean(IS_LOGIN, true);
 
@@ -75,6 +75,8 @@ public class SessionManager {
         editor.putString(KEY_PHONENUMBER, phone);
         editor.putString(KEY_PASSWORD, password);
         editor.putString(KEY_IMAGE, image);
+        editor.putString(KEY_ADDRESS, address);
+        editor.putString(KEY_EMAIL, email);
 
         editor.commit();
 

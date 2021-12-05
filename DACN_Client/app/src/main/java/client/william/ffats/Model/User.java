@@ -19,6 +19,16 @@ public class User {
         IsStaff = "false";
     }
 
+    public User(String name, String password, String phone, String image, String address, String email, String isStaff) {
+        Name = name;
+        Password = password;
+        Phone = phone;
+        Image = image;
+        Address = address;
+        Email = email;
+        IsStaff = "false";
+    }
+
     public String getImage() {
         return Image;
     }

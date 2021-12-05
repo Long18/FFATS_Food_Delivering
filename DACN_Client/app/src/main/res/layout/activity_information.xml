@@ -68,7 +68,8 @@
                     android:id="@+id/img_avata"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:layout_marginRight="5dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="5dp"
                     android:src="@drawable/user_picture" />
 
                 <LinearLayout

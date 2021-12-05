@@ -141,10 +141,12 @@ public class Sign_In extends AppCompatActivity implements GoogleApiClient.Connec
                                     String mPhoneNo = snapshot.child(phoneNo).child("phone").getValue(String.class);
                                     String mPassword = snapshot.child(phoneNo).child("password").getValue(String.class);
                                     String mImage = snapshot.child(phoneNo).child("image").getValue(String.class);
+                                    String mAddress = snapshot.child(phoneNo).child("address").getValue(String.class);
+                                    String mEmail = snapshot.child(phoneNo).child("email").getValue(String.class);
 
                                     //Create Database Store
                                     SessionManager sessionManager = new SessionManager(Sign_In.this, SessionManager.SESSION_USER);
-                                    sessionManager.createLoginSession(mName, mPhoneNo, mPassword,mImage);
+                                    sessionManager.createLoginSession(mName, mPhoneNo, mPassword,mImage,mAddress,mEmail);
 
                                     mDialog.dismiss();
                                     Toast.makeText(Sign_In.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
