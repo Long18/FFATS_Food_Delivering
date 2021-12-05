@@ -62,9 +62,10 @@
 
             <ImageView
                 android:id="@+id/img_avata"
-                android:layout_width="90dp"
-                android:layout_height="90dp"
-                android:layout_marginLeft="20dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginLeft="10dp"
                 android:src="@drawable/user_picture" />
 
             <FrameLayout
