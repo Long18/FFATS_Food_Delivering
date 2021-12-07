@@ -25,6 +25,10 @@
             android:icon="@drawable/coupon"
             android:title="Your Promotion" />
         <item
+            android:id="@+id/nav_shipper_management"
+            android:icon="@drawable/add_shipper"
+            android:title="Management Shippers" />
+        <item
             android:id="@+id/nav_history_order"
             android:icon="@drawable/ic_package"
             android:title="Order history" />

@@ -57,7 +57,7 @@
             android:background="@drawable/primary_button2"
             android:shadowColor="@color/black"/>
 
-        <Button
+       <!-- <Button
             android:id="@+id/btnGoogle"
             android:text="Sign In with Google"
             android:textColor="@color/neutralsText"
@@ -69,15 +69,15 @@
             android:drawableLeft="@drawable/ic_google"
             android:paddingLeft="80dip"
             android:paddingRight="55dip"
-            android:drawablePadding="-50dp"/>
+            android:drawablePadding="-50dp"/>-->
 
-        <TextView
+       <!-- <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Show more"
             android:gravity="center"
             android:textColor="@color/black"/>
-
+-->
 
     </LinearLayout>
 

@@ -405,6 +405,10 @@ public class Home extends AppCompatActivity
             Intent orderIntent = new Intent(Home.this, OrderStatus.class);
             startActivity(orderIntent);
 
+        }else if (id == R.id.nav_shipper_management) {
+            Intent shipperManagement = new Intent(Home.this, ShipperManagermentActivity.class);
+            startActivity(shipperManagement);
+
         } else if (id == R.id.nav_support) {
 
             // delete remember user and password
