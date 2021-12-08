@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">FFATS</string>
+    <string name="ffats_places">AIzaSyDh4_jZf4TOBFC9lJhuS4AAKNVO6tLGRVY</string>
+    <string name="topSlogan">Delivery Service</string>
+    <string name="slogan">The pessimist complains about the wind; the optimist expects it to change; the realist adjusts the sails.</string>
+    <string name="text_signup">Keep your phone we will texted you a verification code to your phone number</string>
+    <string name="text_otp">We texted you a verification code to your phone number: </string>
+    <string name="text_resetPassword">Keep your phone, we will texted you a verification code to your phone number</string>
+    <string name="title_activity_home">Home</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="not_receive_info">Not recevice information</string>
+    <string name="not_receive_info_err">Not recevice information error</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+
+    <!--    Facebook    -->
+    <string name="facebook_app_id">435206154792265</string>
+    <string name="facebook_login_protocol_name">fb435206154792265</string>
+    <string name="fb_login_protocol_scheme">fb435206154792265</string>
+
+    <!--    Tutorial    -->
+    <string name="first_slide_title">Shop from your favorite restaurant</string>
+    <string name="second_slide_title">Quick delivery to your doorstep</string>
+    <string name="third_slide_title">Convenience e-wallet app connecting</string>
+
+    <string name="first_slide_desc">A diverse list of different dining restaurants throughout the territory and around your area carefully selected</string>
+    <string name="second_slide_desc">We have a dynamic and professional delivery team that is professionally and intelligent ly trained</string>
+    <string name="third_slide_desc">A diverse list of different dining restaurants throughout the territory and around your area carefully selected</string>
+</resources>

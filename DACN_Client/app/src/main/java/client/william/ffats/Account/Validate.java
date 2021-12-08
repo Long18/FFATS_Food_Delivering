@@ -4,7 +4,7 @@ public class Validate {
     static final String ONE_DIGIT = "^(?=.*[0-9]).{6,}$";
     static final String ONE_LOWER_CASE = "^(?=.*[a-z]).{6,}$";
     static final String ONE_UPPER_CASE = "^(?=.*[A-Z]).{6,}$";
-    static final String ONE_SPECIAL_CHAR = "^(?=.*[@#$%^&+=]).{6,}$";
+    static final String ONE_SPECIAL_CHAR = "^(?=.*[@!#$%*^&+=]).{6,}$";
     static final String NO_SPACE = "^(?=\\S+$).{6,}$";
     static final String MIN_CHAR = "^[a-zA-Z0-9._-].{5,}$";
     static final String MIN_STRING = "^[a-zA-Z0-9._-].{1,}$";

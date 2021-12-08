@@ -43,7 +43,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="250dp"
-                    android:src="@drawable/main_activity" />
+                    android:src="@drawable/shipper" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -52,7 +52,7 @@
                     android:gravity="left"
                     android:paddingVertical="5dp"
                     android:text="@string/topSlogan"
-                    android:textSize="26dp"
+                    android:textSize="38dp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -94,28 +94,6 @@
                 android:shadowColor="@color/black"
                 android:text="Sign In"
                 android:textColor="@color/colorPrimary" />
-
-
-            <Button
-                android:id="@+id/btnGoogle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:background="@drawable/primary_button3"
-                android:drawableLeft="@drawable/ic_google"
-                android:drawablePadding="-50dp"
-                android:paddingLeft="80dip"
-                android:paddingRight="55dip"
-                android:shadowColor="@color/black"
-                android:text="Sign In with Google"
-                android:textColor="@color/neutralsText" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Show more"
-                android:textColor="@color/black" />
 
 
         </LinearLayout>
