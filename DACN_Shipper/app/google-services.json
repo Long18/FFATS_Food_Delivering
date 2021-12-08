@@ -42,6 +42,72 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498546850757:android:17d9725371d772300a29ac",
+        "android_client_info": {
+          "package_name": "server.william.ffats"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "498546850757-24mfuq1jvoqum24cup4552jaoi7tu2u8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "server.william.ffats",
+            "certificate_hash": "753aabee489dd1e63b2d7f77fe2749bfd39dad4e"
+          }
+        },
+        {
+          "client_id": "498546850757-bfbqjb2vsud8gs8bcj8ntml4am2m22q5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBolQk7SJNQ9IUz1_Qsd6d9UYvXtorOmD4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "498546850757-bfbqjb2vsud8gs8bcj8ntml4am2m22q5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:498546850757:android:57ab6e5c2323bef70a29ac",
+        "android_client_info": {
+          "package_name": "shipper.william.ffats"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "498546850757-bfbqjb2vsud8gs8bcj8ntml4am2m22q5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBolQk7SJNQ9IUz1_Qsd6d9UYvXtorOmD4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "498546850757-bfbqjb2vsud8gs8bcj8ntml4am2m22q5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"

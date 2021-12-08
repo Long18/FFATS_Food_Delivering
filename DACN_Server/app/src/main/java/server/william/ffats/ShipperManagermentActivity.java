@@ -267,7 +267,7 @@ public class ShipperManagermentActivity extends AppCompatActivity {
 
                 Shipper shipper = new Shipper();
                 shipper.setName(tilName.getEditText().getText().toString());
-                shipper.setPhone(tilPhone.getEditText().getText().toString());
+                shipper.setPhone("+84" + tilPhone.getEditText().getText().toString());
                 shipper.setPassword(tilPass.getEditText().getText().toString());
                 shipper.setSumOrders(null);
                 shipper.setImage(uriImage);
