@@ -1,20 +1,16 @@
 package server.william.ffats;
 
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -22,7 +18,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,7 +25,6 @@ import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,14 +33,13 @@ import com.google.firebase.database.ValueEventListener;
 import com.jaredrummler.materialspinner.MaterialSpinner;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import server.william.ffats.Common.Common;
 import server.william.ffats.Database.SessionManager;
-import server.william.ffats.Interface.ItemClickListener;
-import server.william.ffats.Maps.Dijkstra;
 import server.william.ffats.Maps.GraphConstructor;
 import server.william.ffats.Maps.MapValue;
 import server.william.ffats.Maps.XML_reading;
@@ -67,7 +60,7 @@ public class OrderStatus extends AppCompatActivity {
     FirebaseDatabase order;
     DatabaseReference requests;
 
-    MaterialSpinner spinner;
+    MaterialSpinner statusSpinner,shipperSpinner;
 
     FusedLocationProviderClient fusedLocationProviderClient;
 
@@ -189,7 +182,7 @@ public class OrderStatus extends AppCompatActivity {
                                         .build();
                         adapter = new FirebaseRecyclerAdapter<Request, OrderViewHolder>(options) {
                             @Override
-                            protected void onBindViewHolder(@NonNull OrderViewHolder holder, int position, @NonNull Request model) {
+                            protected void onBindViewHolder(@NonNull OrderViewHolder holder, @SuppressLint("RecyclerView") int position, @NonNull Request model) {
                                 holder.btnDirection.setEnabled(true);
 
                                 holder.txtOrderId.setText(adapter.getRef(position).getKey());
@@ -287,8 +280,28 @@ public class OrderStatus extends AppCompatActivity {
         LayoutInflater inflater = this.getLayoutInflater();
         final View view = inflater.inflate(R.layout.update_order,null);
 
-        spinner = view.findViewById(R.id.statusSpiner);
-        spinner.setItems("Placed","On my way", "Shipped");
+        statusSpinner = view.findViewById(R.id.statusSpiner);
+        statusSpinner.setItems("Placed","On my way", "Shipping");
+
+        shipperSpinner = view.findViewById(R.id.shippersSpiner);
+
+        //Get shippers
+        List<String> shippersList = new ArrayList<>();
+        FirebaseDatabase.getInstance().getReference("Shippers")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot shippersSnapShot:snapshot.getChildren()){
+                            shippersList.add(shippersSnapShot.getKey());
+                        }
+                        shipperSpinner.setItems(shippersList);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
 
         alertDialog.setView(view);
 
@@ -298,12 +311,29 @@ public class OrderStatus extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
 
-                item.setStatus(String.valueOf(spinner.getSelectedIndex()));
+                item.setStatus(String.valueOf(statusSpinner.getSelectedIndex()));
 
-                requests.child(localKey).setValue(item);
-                adapter.notifyDataSetChanged();
+                if (item.getStatus().equals("2")){
 
-                sendOrderStatustoUser(localKey,item);
+                    FirebaseDatabase.getInstance().getReference("PendingOrders")
+                            .child(shipperSpinner.getItems().get(shipperSpinner.getSelectedIndex()).toString())
+                            .child(localKey)
+                            .setValue(item);
+
+                    requests.child(localKey).setValue(item);
+                    adapter.notifyDataSetChanged();
+
+                    sendOrderStatustoUser(localKey,item);
+                    sendPendingOrderStatustoShipper(shipperSpinner.getItems().get(shipperSpinner.getSelectedIndex()).toString(),item);
+
+                }else {
+                    requests.child(localKey).setValue(item);
+                    adapter.notifyDataSetChanged();
+
+                    sendOrderStatustoUser(localKey,item);
+                }
+
+
             }
         });
         alertDialog.setNegativeButton("NO", new DialogInterface.OnClickListener() {
@@ -317,8 +347,48 @@ public class OrderStatus extends AppCompatActivity {
 
     }
 
+    private void sendPendingOrderStatustoShipper(final String phone,Request item){
+        DatabaseReference tokens = order.getReference("Tokens");
+
+        tokens.child(phone)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot postSnapShop:snapshot.getChildren()){
+                            Token token = postSnapShop.getValue(Token.class);
+
+                            Notification notification = new Notification("William", "You have new order");
+                            Sender content = new Sender(token.getToken(),notification);
+
+                            mService.sendNotification(content)
+                                    .enqueue(new Callback<Response>() {
+                                        @Override
+                                        public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
+                                            if (response.body().success == 1){
+                                                Toast.makeText(OrderStatus.this, "Sent to shippers", Toast.LENGTH_SHORT).show();
+                                            }
+                                            else{
+                                                Toast.makeText(OrderStatus.this, "failed", Toast.LENGTH_SHORT).show();
+
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onFailure(Call<Response> call, Throwable t) {
+                                            Log.e("ERROR",t.getMessage());
+                                        }
+                                    });
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+    }
     private void sendOrderStatustoUser(final String key,Request item) {
-        DatabaseReference tokens = order.getReference("Toekns");
+        DatabaseReference tokens = order.getReference("Tokens");
 
         tokens.orderByKey().equalTo(item.getPhone())
                 .addValueEventListener(new ValueEventListener() {

@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">FFATS Admin</string>
-    <string name="slogan">Here iss my slogannnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn</string>
+    <string name="slogan">Serving more people, increasing your customer base and making them more deeply engaged is by itself good business</string>
     <string name="text_signup">Keep your phone we will texted you a verification code to your phone number</string>
     <string name="title_activity_home">Home</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -9,6 +9,14 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
+
+    <string name="ffats_places">AIzaSyDh4_jZf4TOBFC9lJhuS4AAKNVO6tLGRVY</string>
+    <string name="topSlogan">Engage your customers</string>
+    <string name="text_otp">We texted you a verification code to your phone number: </string>
+    <string name="text_resetPassword">Keep your phone, we will texted you a verification code to your phone number</string>
+
+    <string name="not_receive_info">Not recevice information</string>
+    <string name="not_receive_info_err">Not recevice information error</string>
 
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>

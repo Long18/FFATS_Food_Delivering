@@ -28,6 +28,11 @@ public class Common {
     public static final String DELETE = "Delete";
     public static final String UPDATE = "Update";
 
+
+    public static final String USER_KEY = "User";
+    public static final String PWD_KEY = "Password";
+    public static final String CCP_KEY = "+84";
+
     public static final int CHOOSE_IMAGE_REQUEST = 18;
 
     public static final String baseUrl = "https://maps.googleapis.com";
@@ -45,7 +50,7 @@ public class Common {
         else if (status.equals("1"))
             return "On my way";
         else
-            return "Shipped";
+            return "Shipping";
 
     }
 

@@ -1,7 +1,7 @@
 package server.william.ffats.Model;
 
 public class Token {
-    private String token,serverToken;
+    public String token =null,serverToken = null;
     private boolean isServerToken;
 
     public Token(String token, boolean isServerToken) {

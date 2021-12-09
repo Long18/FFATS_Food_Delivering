@@ -57,6 +57,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.HashMap;
 import java.util.UUID;
 
+import io.paperdb.Paper;
 import server.william.ffats.Common.Common;
 import server.william.ffats.Database.SessionManager;
 import server.william.ffats.Interface.ItemClickListener;
@@ -108,7 +109,7 @@ public class Home extends AppCompatActivity
         storageReference = storage.getReference();
 
         // init paper
-        //Paper.init(this);
+        Paper.init(this);
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

@@ -21,10 +21,13 @@ public class SessionManager {
     public static final String KEY_FULLNAME = "name";
     public static final String KEY_USERNAME = "userName";
     public static final String KEY_EMAIL = "email";
+    public static final String KEY_IMAGE = null;
     public static final String KEY_PHONENUMBER = "phone";
     public static final String KEY_PASSWORD = "password";
     public static final String KEY_DATE = "date";
     public static final String KEY_GENDER = "gender";
+    public static final String KEY_CITY = "Biên Hoà";
+    public static final String KEY_ADDRESS = "Việt Nam";
 
     public SessionManager(Context mContext, String sessionName) {
         context = mContext;
@@ -32,13 +35,34 @@ public class SessionManager {
         editor = userSession.edit();
     }
 
-    public void createLoginSession(String name, String phone, String password) {
+    public void createAddress(String address) {
+        editor.putBoolean(IS_LOGIN, true);
+
+        editor.putString(KEY_ADDRESS, address);
+
+        editor.commit();
+
+    }
+
+    public void createLocation(String city) {
+        editor.putBoolean(IS_LOGIN, true);
+
+        editor.putString(KEY_CITY, city);
+
+        editor.commit();
+
+    }
+
+    public void createLoginSession(String name, String phone, String password, String image, String address, String email) {
 
         editor.putBoolean(IS_LOGIN, true);
 
         editor.putString(KEY_FULLNAME, name);
         editor.putString(KEY_PHONENUMBER, phone);
         editor.putString(KEY_PASSWORD, password);
+        editor.putString(KEY_IMAGE, image);
+        editor.putString(KEY_ADDRESS, address);
+        editor.putString(KEY_EMAIL, email);
 
         editor.commit();
 
@@ -73,7 +97,7 @@ public class SessionManager {
         editor.putString(KEY_DATE, null);
         editor.putString(KEY_GENDER, null);
 
-        userSession.getBoolean(IS_LOGIN,false);
+        userSession.getBoolean(IS_LOGIN, false);
 
         editor.commit();
 
