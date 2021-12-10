@@ -323,14 +323,14 @@ public class OrderStatus extends AppCompatActivity {
                     requests.child(localKey).setValue(item);
                     adapter.notifyDataSetChanged();
 
-                    sendOrderStatustoUser(localKey,item);
-                    sendPendingOrderStatustoShipper(shipperSpinner.getItems().get(shipperSpinner.getSelectedIndex()).toString(),item);
+                    //sendOrderStatustoUser(localKey,item);
+                    //sendPendingOrderStatustoShipper(shipperSpinner.getItems().get(shipperSpinner.getSelectedIndex()).toString(),item);
 
                 }else {
                     requests.child(localKey).setValue(item);
                     adapter.notifyDataSetChanged();
 
-                    sendOrderStatustoUser(localKey,item);
+                    //sendOrderStatustoUser(localKey,item);
                 }
 
 

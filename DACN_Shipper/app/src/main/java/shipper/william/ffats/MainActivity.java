@@ -242,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
         allowPermission.show();
     }
+
     private void login(String phone, String pwd,String cpp) {
         if(Common.isConnectedToInternet(getBaseContext())) {
 

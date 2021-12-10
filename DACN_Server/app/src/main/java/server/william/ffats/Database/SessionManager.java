@@ -96,6 +96,9 @@ public class SessionManager {
         editor.putString(KEY_PASSWORD, null);
         editor.putString(KEY_DATE, null);
         editor.putString(KEY_GENDER, null);
+        editor.putString(KEY_IMAGE, null);
+        editor.putString(KEY_CITY, null);
+        editor.putString(KEY_ADDRESS, null);
 
         userSession.getBoolean(IS_LOGIN, false);
 
