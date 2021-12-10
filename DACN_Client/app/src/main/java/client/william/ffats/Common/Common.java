@@ -38,7 +38,7 @@ public class Common {
         else if (status.equals("1"))
             return "On my way";
         else
-            return "Shipped";
+            return "Shipping";
 
     }
 

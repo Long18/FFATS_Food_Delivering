@@ -151,6 +151,11 @@
         </activity>
 
         <service
+            android:name=".Service.ListenOrder"
+            android:enabled="true"
+            android:exported="true" />
+
+        <service
             android:name=".Service.FirebaseMessaging"
             android:exported="false"
             android:stopWithTask="false">
