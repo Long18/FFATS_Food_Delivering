@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 import shipper.william.ffats.Database.SessionManager;
+import shipper.william.ffats.Home;
 import shipper.william.ffats.MainActivity;
 import shipper.william.ffats.Model.Request;
 import shipper.william.ffats.R;
@@ -73,7 +74,7 @@ public class ListenOrder extends Service implements ChildEventListener {
 
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(getBaseContext(), "foodStatus");
-        Intent ii = new Intent(getBaseContext(), MainActivity.class);
+        Intent ii = new Intent(getBaseContext(), Home.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 0, ii, PendingIntent.FLAG_ONE_SHOT);
 
         NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
