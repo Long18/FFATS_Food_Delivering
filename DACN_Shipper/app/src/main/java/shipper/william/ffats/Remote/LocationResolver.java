@@ -114,6 +114,16 @@ public class LocationResolver implements GoogleApiClient.ConnectionCallbacks,
                 ContextCompat.checkSelfPermission(mActivity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED);
     }
 
+    /*
+     * This function checks if call permissions are granted or not
+     * */
+    public boolean isCallPermissionEnabled() {
+
+        return !(Build.VERSION.SDK_INT >= 23 &&
+                ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED);
+    }
+
 
     /*
      * Previous location permissions were denied , this function opens app settings page
@@ -375,6 +385,8 @@ public class LocationResolver implements GoogleApiClient.ConnectionCallbacks,
 
     }
 
+
+
     private void createLocationRequest() {
         Log.i("TAG", "CreateLocationRequest");
         mLocationRequest = new LocationRequest();
@@ -560,6 +572,24 @@ public class LocationResolver implements GoogleApiClient.ConnectionCallbacks,
         } else {
             locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
             return !TextUtils.isEmpty(locationProviders);
+        }
+    }
+
+    public void checkPermissionCall(Activity activity) {
+        if (ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.CALL_PHONE)!= PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(activity,
+                        Manifest.permission.CALL_PHONE)!= PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(activity,new String[]{
+                    Manifest.permission.CALL_PHONE
+            },LOCATION_REQUEST);
+        }else {
+            if (checkPlayServices(activity)) {
+
+                createLocationRequest();
+                buildGoogleApiClient();
+            }
         }
     }
 

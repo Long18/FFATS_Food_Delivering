@@ -142,11 +142,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         userInformation = sessionManager.getInfomationUser();
 
 
-        if (ActivityCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            showDialog();
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            showDialogLocation();
+            return;
+        } else if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            showDialogCall();
+            return;
         }
     }
 
@@ -178,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     //region Function
 
-    public void getRecentLocation(){
+    public void getRecentLocation() {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -189,26 +192,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                     try {
                         geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                        addresses = geocoder.getFromLocation(LastLocation.getLatitude(),LastLocation.getLongitude(),1);
+                        addresses = geocoder.getFromLocation(LastLocation.getLatitude(), LastLocation.getLongitude(), 1);
 
                         location = addresses.get(0).getAddressLine(1);
 
                         sessionManager.createLocation(addresses.get(0).getAdminArea());
 
-                        fistTime = getSharedPreferences("tutorialScreen",MODE_PRIVATE);
-                        boolean isFirstTime = fistTime.getBoolean("firstTimeGetLocation",true);
+                        fistTime = getSharedPreferences("tutorialScreen", MODE_PRIVATE);
+                        boolean isFirstTime = fistTime.getBoolean("firstTimeGetLocation", true);
 
-                        if (isFirstTime){
+                        if (isFirstTime) {
                             SharedPreferences.Editor editor = fistTime.edit();
-                            editor.putBoolean("firstTimeGetLocation",false);
+                            editor.putBoolean("firstTimeGetLocation", false);
                             editor.commit();
 
                             sessionManager.createAddress(addresses.get(0).getAddressLine(0));
-                        }
-                        else {
-                            if (userInformation.get(SessionManager.KEY_ADDRESS) == "Việt Nam"){
+                        } else {
+                            if (userInformation.get(SessionManager.KEY_ADDRESS) == "Việt Nam") {
                                 SharedPreferences.Editor editor = fistTime.edit();
-                                editor.putBoolean("firstTimeGetLocation",true);
+                                editor.putBoolean("firstTimeGetLocation", true);
                                 editor.commit();
                                 return;
                             }
@@ -228,7 +230,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         };
     }
 
-    public void showDialog() {
+    public void showDialogCall() {
+        final Dialog allowPermission = new Dialog(MainActivity.this, R.style.df_dialog);
+        allowPermission.setContentView(R.layout.dialog_call);
+
+        allowPermission.findViewById(R.id.btnAllowAccess).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (allowPermission != null && allowPermission.isShowing()) {
+                    allowPermission.dismiss();
+                }
+                mLocationResolver = new LocationResolver(MainActivity.this);
+                mLocationResolver.isCallPermissionEnabled();
+                mLocationResolver.checkPermissionCall(MainActivity.this);
+            }
+        });
+        allowPermission.show();
+    }
+
+    public void showDialogLocation() {
         final Dialog allowPermission = new Dialog(MainActivity.this, R.style.df_dialog);
         allowPermission.setContentView(R.layout.dialog_location);
 
@@ -246,8 +266,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         allowPermission.show();
     }
 
-    private void login(String phone, String pwd,String cpp) {
-        if(Common.isConnectedToInternet(getBaseContext())) {
+    private void login(String phone, String pwd, String cpp) {
+        if (Common.isConnectedToInternet(getBaseContext())) {
 
             final ProgressDialog mDialog = new ProgressDialog(MainActivity.this);
             mDialog.setMessage("Please wait...");
@@ -289,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                             //Create Database Store
                             SessionManager sessionManager = new SessionManager(MainActivity.this, SessionManager.SESSION_USER);
-                            sessionManager.createLoginSession(mName, mPhoneNo, mPassword,mImage,mSumOrders);
+                            sessionManager.createLoginSession(mName, mPhoneNo, mPassword, mImage, mSumOrders);
 
                             mDialog.dismiss();
                             Toast.makeText(MainActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
@@ -311,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             });
 
-        }else{
+        } else {
             Toast.makeText(MainActivity.this, "Please check internet", Toast.LENGTH_SHORT).show();
             return;
         }

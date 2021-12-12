@@ -102,7 +102,7 @@
                         android:background="@drawable/panel_border_all_blue"
                         android:gravity="center"
                         android:text="TOTAL:"
-                        android:textColor="@color/white" />
+                        android:textColor="@color/colorAccent" />
 
                 </RelativeLayout>
 
