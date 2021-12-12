@@ -152,6 +152,7 @@ public class Home extends AppCompatActivity
         Intent service = new Intent(Home.this, ListenOrder.class);
         startService(service);
 
+        // register the service
         Intent intent = new Intent(Home.this, TrackingOrder.class);
         startService(intent);
 

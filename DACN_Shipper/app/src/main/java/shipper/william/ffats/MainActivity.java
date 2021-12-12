@@ -54,9 +54,12 @@ import shipper.william.ffats.Account.Login;
 import shipper.william.ffats.Common.Common;
 import shipper.william.ffats.Database.SessionManager;
 import shipper.william.ffats.Remote.LocationResolver;
+import shipper.william.ffats.Service.ListenOrder;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
+
+    //region Declare
     Button btnSignIn, btnSignUp;
 
     FirebaseDatabase db;

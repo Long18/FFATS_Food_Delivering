@@ -60,6 +60,7 @@ import io.paperdb.Paper;
 import server.william.ffats.Common.Common;
 import server.william.ffats.Database.SessionManager;
 import server.william.ffats.Remote.LocationResolver;
+import server.william.ffats.Service.ListenOrder;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -123,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     private void insertData() {
+
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {

@@ -34,4 +34,5 @@
     <string name="first_slide_desc">A diverse list of different dining restaurants throughout the territory and around your area carefully selected</string>
     <string name="second_slide_desc">We have a dynamic and professional delivery team that is professionally and intelligent ly trained</string>
     <string name="third_slide_desc">A diverse list of different dining restaurants throughout the territory and around your area carefully selected</string>
+    <string name="title_activity_tracking_order">TrackingOrder</string>
 </resources>

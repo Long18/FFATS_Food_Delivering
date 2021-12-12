@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="shipper.william.ffats">
 
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -30,6 +30,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DACN_Shipper"
         tools:replace="android:theme,android:icon">
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+        <activity
+            android:name=".TrackingOrder"
+            android:exported="false"
+            android:label="@string/title_activity_tracking_order" />
         <activity
             android:name=".Home"
             android:exported="false" />
@@ -50,7 +59,6 @@
             android:name=".Service.ListenOrder"
             android:enabled="true"
             android:exported="true" />
-
         <service android:name="com.google.firebase.components.ComponentDiscoveryService">
             <meta-data
                 android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
@@ -68,7 +76,6 @@
                 android:name="com.google.firebase.components:com.google.firebase.database.DatabaseRegistrar"
                 android:value="com.google.firebase.components.ComponentRegistrar" />
         </service>
-
     </application>
 
 </manifest>

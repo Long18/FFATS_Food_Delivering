@@ -67,7 +67,7 @@ public class ListenOrder extends Service implements ChildEventListener {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(getBaseContext(), "foodStatus");
         Intent ii = new Intent(getBaseContext(), OrderStatus.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 0, ii, PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getBaseContext(), 0, ii, PendingIntent.FLAG_MUTABLE);
 
         NotificationCompat.BigTextStyle bigText = new NotificationCompat.BigTextStyle();
         //bigText.bigText(verseurl);

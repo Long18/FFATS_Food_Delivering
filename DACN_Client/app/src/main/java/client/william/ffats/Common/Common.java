@@ -37,8 +37,10 @@ public class Common {
             return "Placed";
         else if (status.equals("1"))
             return "On my way";
-        else
+        else if (status.equals("2"))
             return "Shipping";
+        else
+            return "Shipped";
 
     }
 
