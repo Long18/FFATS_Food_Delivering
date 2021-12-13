@@ -350,7 +350,7 @@ public class TrackingOrder extends FragmentActivity implements
                         thisOrderPath,
                         SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForOrder));
                 removeCurrentPolylines();
-                MapFunction.DrawVertexAndWay(mMap, thisOrderPath.getWayList(), closestNodeForMyLocation, closestNodeForOrder);
+                currentPolyLines = MapFunction.DrawVertexAndWay(mMap, thisOrderPath.getWayList(), closestNodeForMyLocation, closestNodeForOrder);
 
                 //Update location of shipper to Firebase
                 Common.updateLocationRealTime(Common.KEY_REALTIME, mLastLocation);

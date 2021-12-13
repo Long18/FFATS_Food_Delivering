@@ -60,7 +60,6 @@ public class MapFunction {
      * @return  List of Polyline contains all way to vertex
      */
     public static ArrayList<Polyline> DrawVertexAndWay(GoogleMap mMap, ArrayList<Node> findList, Node startNode, Node finishNode){
-
         try{
             ArrayList<Polyline> lines = new ArrayList();
 

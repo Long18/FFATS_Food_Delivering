@@ -100,6 +100,7 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
     FirebaseDatabase database;
     DatabaseReference requests, locationRealTime;
     ArrayList<Polyline> currentPolyLines;
+    Marker marker;
 
     //region Activity Function
     @Override
@@ -180,7 +181,6 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
                         isFirstTime = false;
                     }
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(10), 2000, null);
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
 
 
                     if (ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -194,10 +194,7 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                                     LocationShipper locationShipper = snapshot.getValue(LocationShipper.class);
 
-                                    LatLng shipperLocation = new LatLng(locationShipper.getLat(),locationShipper.getLng());
-
-                                    //Add Marker for Order and draw route
-                                    drawRoute(shipperLocation);
+                                    LatLng shipperLocation = new LatLng(locationShipper.getLat(), locationShipper.getLng());
                                 }
 
                                 @Override
@@ -241,14 +238,14 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
 
     private void drawRoute(LatLng shipperLocationn) {
         LatLng shipperLocation = new LatLng(shipperLocationn.latitude, shipperLocationn.longitude);
+        removeCurrentMarker();
 
         Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.shipper_ic);
         bitmap = Common.scaleBitmap(bitmap, 70, 70);
 
-        MarkerOptions marker = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(bitmap))
+        marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(bitmap))
                 .title("Order of " + userInformation.get(SessionManager.KEY_FULLNAME))
-                .position(shipperLocation);
-        mMap.addMarker(marker);
+                .position(shipperLocation));
 
         mshipperLocation = shipperLocation;
         ///////////////////////////////////////////////
@@ -275,10 +272,16 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
                         thisOrderPath,
                         SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForOrder));
                 removeCurrentPolylines();
-                MapFunction.DrawVertexAndWay(mMap, thisOrderPath.getWayList(), closestNodeForMyLocation, closestNodeForOrder);
+                currentPolyLines = MapFunction.DrawVertexAndWay(mMap, thisOrderPath.getWayList(), closestNodeForMyLocation, closestNodeForOrder);
             }
         });
 
+    }
+
+    private void removeCurrentMarker() {
+        if (marker != null) {
+            marker.remove();
+        }
     }
 
     private void removeCurrentPolylines() {
@@ -302,8 +305,8 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
                 if (mCurrentMarker != null) {
                     mCurrentMarker.setPosition(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
 
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude())));
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f));
+                    /*mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude())));
+                    mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f));*/
 
                     locationRealTime.child(Common.KEY_REALTIME)
                             .addListenerForSingleValueEvent(new ValueEventListener() {
@@ -311,7 +314,7 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                                     LocationShipper locationShipper = snapshot.getValue(LocationShipper.class);
 
-                                    LatLng shipperLocation = new LatLng(locationShipper.getLat(),locationShipper.getLng());
+                                    LatLng shipperLocation = new LatLng(locationShipper.getLat(), locationShipper.getLng());
 
                                     //Add Marker for Order and draw route
                                     drawRoute(shipperLocation);
@@ -480,8 +483,6 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
         }
     }
 
-    //endregion
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -507,23 +508,21 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
                     public void onSuccess(Location location) {
                         mLastLocation = location;
 
-                        LatLng yourLocation = new LatLng(location.getLatitude(),location.getLongitude());
+                        LatLng yourLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
                         mCurrentMarker = mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
                         locationRealTime.child(Common.KEY_REALTIME)
-                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                .addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                                         LocationShipper locationShipper = snapshot.getValue(LocationShipper.class);
 
-                                        LatLng shipperLocation = new LatLng(locationShipper.getLat(),locationShipper.getLng());
+                                        LatLng shipperLocation = new LatLng(locationShipper.getLat(), locationShipper.getLng());
 
                                         //Add Marker for Order and draw route
                                         drawRoute(shipperLocation);
                                         mMap.moveCamera(CameraUpdateFactory.newLatLng(mshipperLocation));
                                         mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f), 2000, null);
-
-                                        trackingLocation();
                                     }
 
                                     @Override
@@ -531,50 +530,11 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
 
                                     }
                                 });
-
                     }
                 });
             }
         }
-
-
     }
+    //endregion
 
-    private void trackingLocation() {
-        requests.child(Common.KEY_REALTIME)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        currentOrders = snapshot.getValue(Request.class);
-
-                        locationRealTime.child(Common.KEY_REALTIME)
-                                .addListenerForSingleValueEvent(new ValueEventListener() {
-                                    @Override
-                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                                        LocationShipper locationShipper = snapshot.getValue(LocationShipper.class);
-
-                                        LatLng shipperLocation = new LatLng(locationShipper.getLat(),locationShipper.getLng());
-
-                                        //Add Marker for Order and draw route
-                                        drawRoute(shipperLocation);
-                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(mshipperLocation));
-                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f), 2000, null);
-                                    }
-
-                                    @Override
-                                    public void onCancelled(@NonNull DatabaseError error) {
-
-                                    }
-                                });
-
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-
-                    }
-                });
-
-
-    }
 }
