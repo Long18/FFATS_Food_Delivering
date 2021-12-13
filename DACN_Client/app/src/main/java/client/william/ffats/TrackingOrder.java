@@ -1,4 +1,4 @@
-package shipper.william.ffats;
+package client.william.ffats;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -7,7 +7,6 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -16,13 +15,8 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
-import android.util.Log;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -40,40 +34,39 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import shipper.william.ffats.Common.Common;
-import shipper.william.ffats.Database.SessionManager;
-import shipper.william.ffats.Maps.Dijkstra;
-import shipper.william.ffats.Maps.GraphConstructor;
-import shipper.william.ffats.Maps.MapFunction;
-import shipper.william.ffats.Maps.Node;
-import shipper.william.ffats.Maps.OrderGraphItem;
-import shipper.william.ffats.databinding.ActivityTrackingOrderBinding;
+import client.william.ffats.Common.Common;
+import client.william.ffats.Database.SessionManager;
+import client.william.ffats.Maps.Dijkstra;
+import client.william.ffats.Maps.GraphConstructor;
+import client.william.ffats.Maps.MapFunction;
+import client.william.ffats.Maps.Node;
+import client.william.ffats.Maps.OrderGraphItem;
+import client.william.ffats.Model.LocationShipper;
+import client.william.ffats.Model.Request;
+import client.william.ffats.databinding.ActivityTrackingOrderBinding;
 
-public class TrackingOrder extends FragmentActivity implements
-        OnMapReadyCallback,
+public class TrackingOrder extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
-    //region Declare
-    ImageButton btnMarker, btnCall, btnDone;
-    TextView txtID, txtName, txtAddress;
-
     private GoogleMap mMap;
+    private ActivityTrackingOrderBinding binding;
 
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 7000;
     private static final int LOCATION_REQUEST = 7777;
@@ -88,11 +81,10 @@ public class TrackingOrder extends FragmentActivity implements
 
     double latitude;
     double longitude;
-    private static LatLng currentLocation, guestLocation, mLocal;
+    private static LatLng currentLocation, mshipperLocation, mLocal;
     Marker mCurrentMarker;
     private Polyline mPolyline;
     private LatLngBounds latlngBounds;
-
 
     boolean isFirstTime = false;
 
@@ -100,13 +92,16 @@ public class TrackingOrder extends FragmentActivity implements
     private static int FAST_INTERVAL = 3000;
     private static int DISPLACEMENT = 10;
 
-
     SessionManager sessionManager;
     HashMap<String, String> userInformation;
-    ArrayList<Polyline> currentPolyLines;
-    //endregion
 
-    //region Function Activity
+    Request currentOrders;
+
+    FirebaseDatabase database;
+    DatabaseReference requests, locationRealTime;
+    ArrayList<Polyline> currentPolyLines;
+
+    //region Activity Function
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,24 +113,13 @@ public class TrackingOrder extends FragmentActivity implements
     }
 
     private void viewConstructor() {
-        btnMarker = findViewById(R.id.fab_marker);
-        btnCall = findViewById(R.id.maps_btnCalling);
-        btnDone = findViewById(R.id.maps_btnDone);
-        txtID = findViewById(R.id.maps_txtID);
-        txtName = findViewById(R.id.maps_txtName);
-        txtAddress = findViewById(R.id.maps_txtAddress);
-
-        txtID.setText(Common.currentRequest.getTotal());
-        txtName.setText(Common.currentRequest.getName());
-        txtAddress.setText(Common.currentRequest.getAddress());
-
         if (ActivityCompat.checkSelfPermission(TrackingOrder.this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(TrackingOrder.this,
-                        android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
-                    android.Manifest.permission.ACCESS_FINE_LOCATION
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
             }, LOCATION_REQUEST);
             createLocationRequest();
             buildGoogleApiClient();
@@ -144,7 +128,7 @@ public class TrackingOrder extends FragmentActivity implements
                 createLocationRequest();
                 createLocationCallBack();
                 fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     return;
                 }
                 fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
@@ -152,44 +136,11 @@ public class TrackingOrder extends FragmentActivity implements
             }
         }
 
-
-        btnMarker.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f), 2000, null);
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(mLocal));
-
-            }
-
-        });
-        btnCall.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_CALL);
-                intent.setData(Uri.parse("tel:" + Common.currentRequest.getPhone()));
-                if (ActivityCompat.checkSelfPermission(TrackingOrder.this,
-                        Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED &&
-                        ActivityCompat.checkSelfPermission(TrackingOrder.this,
-                                android.Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(TrackingOrder.this, new String[]{
-                            Manifest.permission.CALL_PHONE
-                    }, LOCATION_REQUEST);
-                    return;
-                }
-                startActivity(intent);
-            }
-        });
-        btnDone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                completeOrder();
-            }
-        });
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
 
     }
 
@@ -198,65 +149,26 @@ public class TrackingOrder extends FragmentActivity implements
         sessionManager = new SessionManager(getApplicationContext(), SessionManager.SESSION_USER);
         userInformation = sessionManager.getInfomationUser();
 
+        database = FirebaseDatabase.getInstance();
+        requests = database.getReference("Request");
+        locationRealTime = database.getReference("LocationRealTime");
+
     }
     //endregion
 
     //region Function
-    private void completeOrder() {
-        FirebaseDatabase.getInstance().getReference("PendingOrders")
-                .child(userInformation.get(SessionManager.KEY_PHONENUMBER))
-                .child(Common.KEY_REALTIME)
-                .removeValue()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        Map<String, Object> updateStatus = new HashMap<>();
-                        updateStatus.put("status", "03");
-
-                        FirebaseDatabase.getInstance().getReference("Requests")
-                                .child(Common.KEY_REALTIME)
-                                .updateChildren(updateStatus)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void unused) {
-                                        FirebaseDatabase.getInstance().getReference("PendingOrders")
-                                                .child(Common.KEY_REALTIME)
-                                                .removeValue()
-                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void unused) {
-                                                        finish();
-                                                    }
-                                                });
-                                        FirebaseDatabase.getInstance().getReference("LocationRealTime")
-                                                .child(Common.KEY_REALTIME)
-                                                .removeValue()
-                                                .addOnFailureListener(new OnFailureListener() {
-                                                    @Override
-                                                    public void onFailure(@NonNull Exception e) {
-                                                        Log.d("Bug", e.getMessage());
-                                                    }
-                                                });
-                                    }
-                                });
-                    }
-                });
-    }
-
-
     private void builLocationCallBack() {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
                 super.onLocationResult(locationResult);
-                Location mLastLocation = locationResult.getLastLocation();
+                Location LastLocation = locationResult.getLastLocation();
 
-                Toast.makeText(TrackingOrder.this, mLastLocation.getLatitude() + "," + mLastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(TrackingOrder.this, LastLocation.getLatitude() + "," + LastLocation.getLongitude(), Toast.LENGTH_SHORT).show();
 
-                if (mLastLocation != null) {
-                    latitude = mLastLocation.getLatitude();
-                    longitude = mLastLocation.getLongitude();
-
+                if (LastLocation != null) {
+                    latitude = LastLocation.getLatitude();
+                    longitude = LastLocation.getLongitude();
 
                     //Marker your location and move
                     LatLng yourLocation = new LatLng(latitude, longitude);
@@ -271,13 +183,28 @@ public class TrackingOrder extends FragmentActivity implements
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
 
 
-                    if (ActivityCompat.checkSelfPermission(TrackingOrder.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(TrackingOrder.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         return;
                     }
                     mMap.setMyLocationEnabled(true);
 
-                    //Add Marker for Order and draw route
-                    drawRoute(getLocationFromAddress(TrackingOrder.this, Common.currentRequest.getAddress()));
+                    locationRealTime.child(Common.KEY_REALTIME)
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    LocationShipper locationShipper = snapshot.getValue(LocationShipper.class);
+
+                                    LatLng shipperLocation = new LatLng(locationShipper.getLat(),locationShipper.getLng());
+
+                                    //Add Marker for Order and draw route
+                                    drawRoute(shipperLocation);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
 
 
                 } else {
@@ -312,25 +239,23 @@ public class TrackingOrder extends FragmentActivity implements
         return p1;
     }
 
-    private void drawRoute(LatLng guestLatlon) {
+    private void drawRoute(LatLng shipperLocationn) {
+        LatLng shipperLocation = new LatLng(shipperLocationn.latitude, shipperLocationn.longitude);
 
-
-        LatLng orderLocation = new LatLng(guestLatlon.latitude, guestLatlon.longitude);
-
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.package_filled);
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.shipper_ic);
         bitmap = Common.scaleBitmap(bitmap, 70, 70);
 
         MarkerOptions marker = new MarkerOptions().icon(BitmapDescriptorFactory.fromBitmap(bitmap))
                 .title("Order of " + userInformation.get(SessionManager.KEY_FULLNAME))
-                .position(orderLocation);
+                .position(shipperLocation);
         mMap.addMarker(marker);
 
-        guestLocation = orderLocation;
+        mshipperLocation = shipperLocation;
         ///////////////////////////////////////////////
 
-        //orderLocation là vị trí nơi khách hàng
+        //mshipperLocation là vị trí nơi shipper
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
@@ -340,7 +265,7 @@ public class TrackingOrder extends FragmentActivity implements
                 Node closestNodeForMyLocation = GraphConstructor
                         .findClosestNode(SessionManager.MAP_VALUE.getVertices(), location.getLatitude(), location.getLongitude());
                 Node closestNodeForOrder = GraphConstructor
-                        .findClosestNode(SessionManager.MAP_VALUE.getVertices(), orderLocation.latitude, orderLocation.longitude);
+                        .findClosestNode(SessionManager.MAP_VALUE.getVertices(), shipperLocation.latitude, shipperLocation.longitude);
 
                 Dijkstra dijkstra = new Dijkstra(SessionManager.MAP_VALUE.getMAX_length(), SessionManager.MAP_VALUE.getGraph());
                 int temp = SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForMyLocation);
@@ -351,13 +276,8 @@ public class TrackingOrder extends FragmentActivity implements
                         SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForOrder));
                 removeCurrentPolylines();
                 MapFunction.DrawVertexAndWay(mMap, thisOrderPath.getWayList(), closestNodeForMyLocation, closestNodeForOrder);
-
-                //Update location of shipper to Firebase
-                Common.updateLocationRealTime(Common.KEY_REALTIME, mLastLocation);
-
             }
         });
-
 
     }
 
@@ -379,16 +299,29 @@ public class TrackingOrder extends FragmentActivity implements
 
                 mLocal = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
 
-                LatLng yourLocation = new LatLng(latitude, longitude);
-
                 if (mCurrentMarker != null) {
                     mCurrentMarker.setPosition(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
 
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude())));
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f));
 
-                    drawRoute(getLocationFromAddress(TrackingOrder.this, Common.currentRequest.getAddress()));
+                    locationRealTime.child(Common.KEY_REALTIME)
+                            .addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    LocationShipper locationShipper = snapshot.getValue(LocationShipper.class);
 
+                                    LatLng shipperLocation = new LatLng(locationShipper.getLat(),locationShipper.getLng());
+
+                                    //Add Marker for Order and draw route
+                                    drawRoute(shipperLocation);
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+
+                                }
+                            });
                 }
             }
         };
@@ -408,9 +341,9 @@ public class TrackingOrder extends FragmentActivity implements
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
                     public void onConnected(Bundle bundle) {
-                        if (ActivityCompat.checkSelfPermission(TrackingOrder.this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                        if (ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_FINE_LOCATION)
                                 != PackageManager.PERMISSION_GRANTED
-                                && ActivityCompat.checkSelfPermission(TrackingOrder.this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                                && ActivityCompat.checkSelfPermission(TrackingOrder.this, Manifest.permission.ACCESS_COARSE_LOCATION)
                                 != PackageManager.PERMISSION_GRANTED) {
 
                             return;
@@ -472,8 +405,14 @@ public class TrackingOrder extends FragmentActivity implements
                         builLocationCallBack();
 
                         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-                        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-
+                        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            // TODO: Consider calling
+                            //    ActivityCompat#requestPermissions
+                            // here to request the missing permissions, and then overriding
+                            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                            //                                          int[] grantResults)
+                            // to handle the case where the user grants the permission. See the documentation
+                            // for ActivityCompat#requestPermissions for more details.
                             return;
                         }
                         fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, Looper.myLooper());
@@ -492,9 +431,9 @@ public class TrackingOrder extends FragmentActivity implements
     }
 
     private void startLocationUpdate() {
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED
-                && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             return;
@@ -509,7 +448,6 @@ public class TrackingOrder extends FragmentActivity implements
         mGoogleApiClient.connect();
     }
 
-
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     }
@@ -517,6 +455,7 @@ public class TrackingOrder extends FragmentActivity implements
     @Override
     public void onLocationChanged(@NonNull Location location) {
         mLastLocation = location;
+        //displayLocation();
         builLocationCallBack();
     }
 
@@ -529,6 +468,8 @@ public class TrackingOrder extends FragmentActivity implements
     @Override
     protected void onStop() {
         super.onStop();
+//        mGoogleApiClient.disconnect();
+        //stopLocationUpdates();
     }
 
     @Override
@@ -539,21 +480,19 @@ public class TrackingOrder extends FragmentActivity implements
         }
     }
 
+    //endregion
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        boolean isSuccess = mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style));
-        if (!isSuccess) {
-            Log.d("BUG", "lỗi map rồi má ơi");
-        }
+        mMap.getUiSettings().setZoomControlsEnabled(true);
 
         if (ActivityCompat.checkSelfPermission(TrackingOrder.this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(TrackingOrder.this,
-                        android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{
-                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
                     Manifest.permission.ACCESS_FINE_LOCATION
             }, LOCATION_REQUEST);
 
@@ -568,20 +507,74 @@ public class TrackingOrder extends FragmentActivity implements
                     public void onSuccess(Location location) {
                         mLastLocation = location;
 
-                        LatLng yourLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                        LatLng yourLocation = new LatLng(location.getLatitude(),location.getLongitude());
 
                         mCurrentMarker = mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));
-                        mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f), 2000, null);
+                        locationRealTime.child(Common.KEY_REALTIME)
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        LocationShipper locationShipper = snapshot.getValue(LocationShipper.class);
+
+                                        LatLng shipperLocation = new LatLng(locationShipper.getLat(),locationShipper.getLng());
+
+                                        //Add Marker for Order and draw route
+                                        drawRoute(shipperLocation);
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(mshipperLocation));
+                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f), 2000, null);
+
+                                        trackingLocation();
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
 
                     }
                 });
             }
         }
-        //Add Marker for Order and draw route
-        drawRoute(getLocationFromAddress(TrackingOrder.this, Common.currentRequest.getAddress()));
+
 
     }
 
-    //endregion
+    private void trackingLocation() {
+        requests.child(Common.KEY_REALTIME)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        currentOrders = snapshot.getValue(Request.class);
+
+                        locationRealTime.child(Common.KEY_REALTIME)
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                        LocationShipper locationShipper = snapshot.getValue(LocationShipper.class);
+
+                                        LatLng shipperLocation = new LatLng(locationShipper.getLat(),locationShipper.getLng());
+
+                                        //Add Marker for Order and draw route
+                                        drawRoute(shipperLocation);
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(mshipperLocation));
+                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f), 2000, null);
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError error) {
+
+                                    }
+                                });
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+
+
+    }
 }

@@ -13,14 +13,6 @@
             android:icon="@drawable/heart"
             android:title="Manage Banner" />
         <item
-            android:id="@+id/nav_address"
-            android:icon="@drawable/map"
-            android:title="Address management" />
-        <item
-            android:id="@+id/nav_payment"
-            android:icon="@drawable/credit_card"
-            android:title="Payment management" />
-        <item
             android:id="@+id/nav_promotion"
             android:icon="@drawable/coupon"
             android:title="Your Promotion" />

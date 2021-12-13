@@ -2,10 +2,13 @@ package server.william.ffats;
 
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
@@ -13,11 +16,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -65,6 +70,7 @@ public class OrderStatus extends AppCompatActivity {
     FusedLocationProviderClient fusedLocationProviderClient;
 
     APIService mService;
+    ProgressDialog mDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +87,14 @@ public class OrderStatus extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
+
+        mDialog = new ProgressDialog(OrderStatus.this);
+        mDialog.setMessage("Please wait...");
+        Drawable drawable = new ProgressBar(OrderStatus.this).getIndeterminateDrawable().mutate();
+        drawable.setColorFilter(ContextCompat.getColor(OrderStatus.this, R.color.colorPrimary),
+                PorterDuff.Mode.SRC_IN);
+        mDialog.setIndeterminateDrawable(drawable);
+        mDialog.show();
 
         LoadMapData();
         loadOrder();
@@ -176,65 +190,7 @@ public class OrderStatus extends AppCompatActivity {
                     @Override
                     public void run() {
                         // chay het adapter roi set btn sang maps activity thanh visible
-                        FirebaseRecyclerOptions<Request> options =
-                                new FirebaseRecyclerOptions.Builder<Request>()
-                                        .setQuery(requests, Request.class)
-                                        .build();
-                        adapter = new FirebaseRecyclerAdapter<Request, OrderViewHolder>(options) {
-                            @Override
-                            protected void onBindViewHolder(@NonNull OrderViewHolder holder, @SuppressLint("RecyclerView") int position, @NonNull Request model) {
-                                holder.btnDirection.setEnabled(true);
-
-                                holder.txtOrderId.setText(adapter.getRef(position).getKey());
-                                holder.txtOrderStatus.setText(Common.convertCodeToStatus(model.getStatus()));
-                                holder.txtAddress.setText(model.getAddress());
-                                holder.txtOrderPhone.setText(model.getPhone());
-                                holder.txtDate.setText("Date: " + Common.getDate(Long.parseLong(adapter.getRef(position).getKey())));
-
-                                holder.btnEdit.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        showUpdateDialog(adapter.getRef(position).getKey(),adapter.getItem(position));
-                                    }
-                                });
-
-                                holder.btnRemove.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        deleteOrder(adapter.getRef(position).getKey());
-                                    }
-                                });
-
-                                holder.btnDetail.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Intent orderDetail = new Intent(OrderStatus.this, OrderDetail.class);
-                                        Common.currentRequest = model;
-                                        orderDetail.putExtra("OrderId",adapter.getRef(position).getKey());
-                                        startActivity(orderDetail);
-                                    }
-                                });
-
-                                holder.btnDirection.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        Intent trackingOrder = new Intent(OrderStatus.this, TrackingOrder.class);
-                                        Common.currentRequest = model;
-                                        startActivity(trackingOrder);
-                                    }
-                                });
-                            }
-
-                            @NonNull
-                            @Override
-                            public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.order_layout, parent, false);
-                                    return new OrderViewHolder(view);
-                            }
-                        };
-                        adapter.startListening();
-                        adapter.notifyDataSetChanged();
-                        recyclerView.setAdapter(adapter);
+                        mDialog.dismiss();
                     }
                 });
             }

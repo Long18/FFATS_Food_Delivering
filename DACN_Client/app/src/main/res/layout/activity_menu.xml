@@ -18,12 +18,6 @@
             android:layout_height="wrap_content"
             android:paddingTop="10dp">
 
-            <ImageView
-                android:id="@+id/ic_back"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_gravity="center|left"
-                android:src="@drawable/arrow_left" />
 
             <TextView
                 android:id="@+id/txtMenu"

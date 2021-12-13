@@ -107,10 +107,9 @@ public class TrackingOrder extends FragmentActivity implements
     private static int FAST_INTERVAL = 3000;
     private static int DISPLACEMENT = 10;
 
-    private IGeoCoordinates mService;
-
     SessionManager sessionManager;
     HashMap<String, String> userInformation;
+    ArrayList<Polyline> currentPolyLines;
 
 
     @Override
@@ -160,13 +159,6 @@ public class TrackingOrder extends FragmentActivity implements
             }
 
         });
-
-        //binding = ActivityTrackingOrderBinding.inflate(getLayoutInflater());
-        //setContentView(binding.getRoot());
-
-        mService = Common.getGeoCodeService();
-
-        //mLastLocation = LocationServices.getFusedLocationProviderClient(TrackingOrder.this);
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -273,23 +265,32 @@ public class TrackingOrder extends FragmentActivity implements
             public void onSuccess(Location location) {
                 mLastLocation = location;
                 Node closestNodeForMyLocation = GraphConstructor
-                        .findClosestNode(SessionManager.MAP_VALUE.getVertices(), location.getLatitude(),location.getLongitude());
+                        .findClosestNode(SessionManager.MAP_VALUE.getVertices(), location.getLatitude(), location.getLongitude());
                 Node closestNodeForOrder = GraphConstructor
-                        .findClosestNode(SessionManager.MAP_VALUE.getVertices(), orderLocation.latitude,orderLocation.longitude);
+                        .findClosestNode(SessionManager.MAP_VALUE.getVertices(), orderLocation.latitude, orderLocation.longitude);
 
                 Dijkstra dijkstra = new Dijkstra(SessionManager.MAP_VALUE.getMAX_length(), SessionManager.MAP_VALUE.getGraph());
-                int temp =SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForMyLocation);
+                int temp = SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForMyLocation);
                 dijkstra.runDijkstraWithPriorityQueue(temp);
                 OrderGraphItem thisOrderPath = new OrderGraphItem();
                 dijkstra.getWayForDijkstraWithPriorityQueueToGraph(SessionManager.MAP_VALUE.getVertices(),
                         thisOrderPath,
                         SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForOrder));
-
-                MapFunction.DrawVertexAndWay(mMap,thisOrderPath.getWayList(),closestNodeForMyLocation,closestNodeForOrder);
+                removeCurrentPolylines();
+                currentPolyLines = MapFunction.DrawVertexAndWay(mMap, thisOrderPath.getWayList(), closestNodeForMyLocation, closestNodeForOrder);
             }
         });
 
 
+    }
+
+    private void removeCurrentPolylines() {
+        if (currentPolyLines != null) {
+            for (Polyline item :
+                    currentPolyLines) {
+                item.remove();
+            }
+        }
     }
 
     private void createLocationCallBack() {
@@ -299,14 +300,14 @@ public class TrackingOrder extends FragmentActivity implements
                 super.onLocationResult(locationResult);
                 mLastLocation = locationResult.getLastLocation();
 
-                mLocal = new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
+                mLocal = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
 
                 LatLng yourLocation = new LatLng(latitude, longitude);
 
-                if (mCurrentMarker != null){
-                    mCurrentMarker.setPosition(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude()));
+                if (mCurrentMarker != null) {
+                    mCurrentMarker.setPosition(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
 
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude())));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude())));
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(16.0f));
 
                     drawRoute(getLocationFromAddress(TrackingOrder.this, Common.currentRequest.getAddress()));
@@ -378,13 +379,6 @@ public class TrackingOrder extends FragmentActivity implements
         return true;
     }
 
-    private void requestRuntimePermission() {
-        ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-        }, LOCATION_PERMISSION_REQUEST);
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -438,16 +432,10 @@ public class TrackingOrder extends FragmentActivity implements
                 .requestLocationUpdates(mGoogleApiClient, locationRequest, (com.google.android.gms.location.LocationListener) this);
     }
 
-    protected void stopLocationUpdates() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(
-                mGoogleApiClient, (com.google.android.gms.location.LocationListener) this);
-    }
-
     @Override
     public void onConnectionSuspended(int i) {
         mGoogleApiClient.connect();
     }
-
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -481,74 +469,6 @@ public class TrackingOrder extends FragmentActivity implements
         }
     }
 
-
-    private class ParserTask extends AsyncTask<String, Integer,
-            List<List<HashMap<String, String>>>> {
-
-        ProgressDialog mDialog = new ProgressDialog(TrackingOrder.this);
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mDialog.setMessage("Please waiting...");
-            mDialog.show();
-        }
-
-        @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... strings) {
-
-            JSONObject jsonObject;
-            List<List<HashMap<String, String>>> routes = null;
-            try {
-                jsonObject = new JSONObject(strings[0]);
-                DirectionJSONParser parser = new DirectionJSONParser();
-
-                routes = parser.parse(jsonObject);
-
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return routes;
-
-        }
-
-        @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> lists) {
-            mDialog.dismiss();
-
-            ArrayList points = null;
-            PolylineOptions lineOptions = null;
-
-            for (int i = 0; i < lists.size(); i++) {
-
-                points = new ArrayList();
-                lineOptions = new PolylineOptions();
-
-                List<HashMap<String, String>> path = lists.get(i);
-
-                for (int j = 0; j < path.size(); j++) {
-
-                    HashMap<String, String> point = path.get(j);
-
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-
-                    LatLng position = new LatLng(lat, lng);
-
-                    points.add(position);
-                }
-
-                lineOptions.addAll(points);
-                lineOptions.width(8);
-                lineOptions.color(Color.RED);
-                lineOptions.geodesic(true);
-            }
-
-            mMap.addPolyline(lineOptions);
-        }
-    }
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -573,7 +493,7 @@ public class TrackingOrder extends FragmentActivity implements
                     public void onSuccess(Location location) {
                         mLastLocation = location;
 
-                        LatLng yourLocation = new LatLng(location.getLatitude(),location.getLongitude());
+                        LatLng yourLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
                         mCurrentMarker = mMap.addMarker(new MarkerOptions().position(yourLocation).title("Your Location"));
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(yourLocation));

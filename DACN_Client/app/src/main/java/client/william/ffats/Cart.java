@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -448,6 +449,9 @@ public class Cart extends AppCompatActivity implements
                             txtTotalPrice.getText().toString(),
                             "0",
                             edtComment.getText().toString(),
+                            String.format("%s,%s",
+                                    getLocationFromAddress(Cart.this, edtAddress.getText().toString()).latitude,
+                                    getLocationFromAddress(Cart.this, edtAddress.getText().toString()).longitude),
                             "Momo",
                             cart
                     );
@@ -474,6 +478,9 @@ public class Cart extends AppCompatActivity implements
                             txtTotalPrice.getText().toString(),
                             "0",
                             edtComment.getText().toString(),
+                            String.format("%s,%s",
+                                    getLocationFromAddress(Cart.this, edtAddress.getText().toString()).latitude,
+                                    getLocationFromAddress(Cart.this, edtAddress.getText().toString()).longitude),
                             "Cash",
                             cart
                     );
@@ -496,6 +503,9 @@ public class Cart extends AppCompatActivity implements
                             txtTotalPrice.getText().toString(),
                             "0",
                             edtComment.getText().toString(),
+                            String.format("%s,%s",
+                                    getLocationFromAddress(Cart.this, edtAddress.getText().toString()).latitude,
+                                    getLocationFromAddress(Cart.this, edtAddress.getText().toString()).longitude),
                             "Zalo Payment",
                             cart
                     );
@@ -527,6 +537,30 @@ public class Cart extends AppCompatActivity implements
         });
         alertDialog.show();
 
+    }
+
+    public LatLng getLocationFromAddress(Context context, String strAddress) {
+
+        Geocoder coder = new Geocoder(context);
+        List<Address> address;
+        LatLng p1 = null;
+
+        try {
+            // May throw an IOException
+            address = coder.getFromLocationName(strAddress, 5);
+            if (address == null) {
+                return null;
+            }
+
+            Address location = address.get(0);
+            p1 = new LatLng(location.getLatitude(), location.getLongitude());
+
+        } catch (IOException ex) {
+
+            ex.printStackTrace();
+        }
+
+        return p1;
     }
 
     private void zaloPayment() {

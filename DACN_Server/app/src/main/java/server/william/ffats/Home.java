@@ -399,10 +399,6 @@ public class Home extends AppCompatActivity
             Intent banner = new Intent(Home.this, BannerManager.class);
             startActivity(banner);
 
-        }else if (id == R.id.nav_payment) {
-            Intent cartIntent = new Intent(Home.this, OrderStatus.class);
-            startActivity(cartIntent);
-
         } else if (id == R.id.nav_history_order) {
             Intent orderIntent = new Intent(Home.this, OrderStatus.class);
             startActivity(orderIntent);
