@@ -1,5 +1,6 @@
 package client.william.ffats.ViewHolder;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +51,7 @@ public class SliderAdapter extends PagerAdapter {
         return view == (ConstraintLayout) object;
     }
 
+    @SuppressLint("ResourceAsColor")
     @NonNull
     @Override
     public Object instantiateItem(@NonNull ViewGroup container, int position) {

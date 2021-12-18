@@ -54,17 +54,17 @@ public class MapFunction {
     /**
      * draw line between vertices and node in way
      * @param mMap          map
-     * @param findList      list vertices found from start to finish
-     * @param startNode     start node
-     * @param finishNode    finish node
+     * @param i_findList      list vertices found from start to finish
+     * @param i_startNode     start node
+     * @param i_finishNode    finish node
      * @return  List of Polyline contains all way to vertex
      */
-    public static ArrayList<Polyline> DrawVertexAndWay(GoogleMap mMap, ArrayList<Node> findList, Node startNode, Node finishNode){
+    public static ArrayList<Polyline> DrawVertexAndWay(GoogleMap mMap, ArrayList<Node> i_findList, Node i_startNode, Node i_finishNode){
         try{
             ArrayList<Polyline> lines = new ArrayList();
 
 
-            int findListCount = (int) findList.stream().count();
+            int findListCount = (int) i_findList.stream().count();
             if (findListCount > 0){
                 boolean isFirstTimeHuh = true;
 
@@ -74,18 +74,18 @@ public class MapFunction {
                     if (isFirstTimeHuh) {
                         //draw start vertex to next vertex
 
-                        temp = DrawWay(mMap,startNode,findList.get(i));
+                        temp = DrawWay(mMap,i_startNode,i_findList.get(i));
                         isFirstTimeHuh = false;
                     } else {
-                        temp = DrawWay(mMap,findList.get(i + 1),findList.get(i));
+                        temp = DrawWay(mMap,i_findList.get(i + 1),i_findList.get(i));
                     }
                     lines.addAll(temp);
                 }
 
-                ArrayList<Polyline> temp = DrawWay(mMap,findList.get(0),finishNode);
+                ArrayList<Polyline> temp = DrawWay(mMap,i_findList.get(0),i_finishNode);
                 lines.addAll(temp);
             }else{
-                ArrayList<Polyline> temp = DrawWay(mMap,startNode,finishNode);
+                ArrayList<Polyline> temp = DrawWay(mMap,i_startNode,i_finishNode);
                 lines.addAll(temp);
             }
 

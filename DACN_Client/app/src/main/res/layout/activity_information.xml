@@ -365,7 +365,7 @@
                             android:layout_gravity="left|center"
                             android:layout_marginLeft="10dp"
                             android:gravity="center"
-                            android:text="Facebook"
+                            android:text="Google"
                             android:textColor="@color/black"
                             android:textSize="16dp" />
 

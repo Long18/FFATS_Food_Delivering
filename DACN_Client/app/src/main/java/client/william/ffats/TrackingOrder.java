@@ -259,19 +259,28 @@ public class TrackingOrder extends FragmentActivity implements OnMapReadyCallbac
             @Override
             public void onSuccess(Location location) {
                 mLastLocation = location;
+                // xoá đường đi cũ
+                removeCurrentPolylines();
+
+                // tìm vertex gần nhất so với vị trí gps
                 Node closestNodeForMyLocation = GraphConstructor
                         .findClosestNode(SessionManager.MAP_VALUE.getVertices(), location.getLatitude(), location.getLongitude());
+                // tìm vertex gần nhất so với vị trí của đơn hàng
                 Node closestNodeForOrder = GraphConstructor
                         .findClosestNode(SessionManager.MAP_VALUE.getVertices(), shipperLocation.latitude, shipperLocation.longitude);
 
                 Dijkstra dijkstra = new Dijkstra(SessionManager.MAP_VALUE.getMAX_length(), SessionManager.MAP_VALUE.getGraph());
-                int temp = SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForMyLocation);
-                dijkstra.runDijkstraWithPriorityQueue(temp);
+                // lấy số lượng đỉnh
+                int numberOfVertices = SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForMyLocation);
+                //chạy thuật toán dijkstra with priority queue
+                dijkstra.runDijkstraWithPriorityQueue(numberOfVertices);
+
+                // lấy kết quả vào thisOrderPath
                 OrderGraphItem thisOrderPath = new OrderGraphItem();
                 dijkstra.getWayForDijkstraWithPriorityQueueToGraph(SessionManager.MAP_VALUE.getVertices(),
                         thisOrderPath,
                         SessionManager.MAP_VALUE.getVertices().indexOf(closestNodeForOrder));
-                removeCurrentPolylines();
+                // vẽ đường đi
                 currentPolyLines = MapFunction.DrawVertexAndWay(mMap, thisOrderPath.getWayList(), closestNodeForMyLocation, closestNodeForOrder);
             }
         });

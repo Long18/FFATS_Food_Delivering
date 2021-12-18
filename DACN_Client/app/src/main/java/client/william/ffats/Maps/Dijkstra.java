@@ -149,7 +149,7 @@ public class Dijkstra {
             distNode.source = i.destination;
             distNode.destination = j;
             distNode.distance = graph[i.destination][j];
-
+            // nếu như kkhông có đường đi từ i tới j thì bỏ qua lần lặp này
             if (distNode.distance == Double.MAX_VALUE){
                 continue;
             }else {
@@ -173,17 +173,18 @@ public class Dijkstra {
         }
     }
 
-    public void getWayForDijkstraWithPriorityQueueToGraph(ArrayList<Node> vertices, OrderGraphItem orderGraphItem, int i_finish) {
+    public void getWayForDijkstraWithPriorityQueueToGraph(ArrayList<Node> vertices, OrderGraphItem o_orderGraphItem, int i_finish) {
         int finish = i_finish;
         Double distance = 0d;
         int lastSource = -1;
         boolean isFirstTime = true;
         int source = -1;
+
         while (m_dist[finish].source != m_start) {
             source = m_dist[finish].source;
             if (source != -1){
 
-                orderGraphItem.getWayList().add(vertices.get(source));
+                o_orderGraphItem.getWayList().add(vertices.get(source));
                 finish = m_dist[finish].source;
 
                 if (isFirstTime){
@@ -197,16 +198,16 @@ public class Dijkstra {
                 break;
             }
         }
-        if (orderGraphItem.getWayList().stream().count() < 1){
+        if (o_orderGraphItem.getWayList().stream().count() < 1){
             distance += graph[m_start][i_finish];
         }
 
-        if (orderGraphItem.getWayList().stream().count() == 1){
-            distance += graph[vertices.indexOf(orderGraphItem.getWayList().get(0))][i_finish];
-            distance += graph[m_start][vertices.indexOf(orderGraphItem.getWayList().get(0))];
+        if (o_orderGraphItem.getWayList().stream().count() == 1){
+            distance += graph[vertices.indexOf(o_orderGraphItem.getWayList().get(0))][i_finish];
+            distance += graph[m_start][vertices.indexOf(o_orderGraphItem.getWayList().get(0))];
         }
 
-        orderGraphItem.setDistance(distance);
+        o_orderGraphItem.setDistance(distance);
 
     }
 
